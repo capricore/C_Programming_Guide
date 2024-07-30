@@ -972,6 +972,17 @@ void changeX(int *x){
     printf("[changeX after ] x = %d\n", *x);
 }
 ```
+### Explanation
+
+1. **Function Call with Pass-by-Value**:
+   - In C, function arguments are passed by value, meaning that a copy of the argument is made. Changes to this copy do not affect the original variable.
+
+2. **Current Behavior**:
+   - When you call `changeX(x)`, the `x` in `changeX` is a copy of the `x` in `main`. Changing `x` in `changeX` does not affect the `x` in `main`.
+
+### Desired Behavior
+
+If you want `changeX` to modify the value of `x` in `main`, you need to use pointers. By passing a pointer to `x`, `changeX` can modify the original `x` in `main`.
 
 ### 9. Finding Prime Numbers Using the Sieve of Eratosthenes
 **Sieve of Eratosthenes** 
