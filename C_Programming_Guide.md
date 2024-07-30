@@ -1,5 +1,3 @@
-Certainly! Here's a more detailed and supplemented outline for teaching an undergraduate who has just learned C:
-
 # C Programming
 
 ## Background (This part is not important, just get simple understanding is enough)
@@ -296,12 +294,738 @@ data.f;
 data.str;
 ```
 
-## Additional Knowledge of C
+### `fgets` and `scanf` in C
 
-1. Arithmetic Operations Between Same Types
-   - Operations between two `int` variables result in an `int`.
+#### `fgets`
 
-2. Static Variables
-   - Static variables retain their value between function calls and have file scope if declared outside a function.
+The `fgets` function is used to read a string from a file or standard input (`stdin`). It reads characters until a newline is encountered or until the specified number of characters have been read, whichever comes first.
 
-By covering these topics in detail, the student should gain a comprehensive understanding of C programming and be well-prepared for further study and practical application.
+**Syntax**:
+```c
+char *fgets(char *str, int n, FILE *stream);
+```
+
+- **Parameters**:
+  - `str`: Pointer to a character array where the read string will be stored.
+  - `n`: Maximum number of characters to read, including the null terminator.
+  - `stream`: Input stream to read from (e.g., `stdin` for standard input).
+
+- **Return Value**: A pointer to the string `str` on success, or `NULL` if an error occurs or end-of-file is reached.
+
+**Example**:
+```c
+#include <stdio.h>
+
+int main() {
+    char buffer[100];
+    printf("Enter a string: ");
+    if (fgets(buffer, sizeof(buffer), stdin) != NULL) {
+        printf("You entered: %s", buffer);
+    } else {
+        printf("Error reading input.");
+    }
+    return 0;
+}
+```
+
+#### `scanf`
+
+The `scanf` function is used to read formatted input from standard input (`stdin`). It processes the input based on the provided format specifiers and stores the results in the corresponding variables.
+
+**Syntax**:
+```c
+int scanf(const char *format, ...);
+```
+
+- **Parameters**:
+  - `format`: A format string containing format specifiers that dictate the type of data to read.
+  - `...`: Additional arguments, each pointing to the location where the read data should be stored.
+
+- **Return Value**: The number of items successfully read and assigned, or `EOF` if an input failure occurs.
+
+**Example**:
+```c
+#include <stdio.h>
+
+int main() {
+    int number;
+    char character;
+    printf("Enter a number and a character: ");
+    if (scanf("%d %c", &number, &character) == 2) {
+        printf("You entered: %d and %c\n", number, character);
+    } else {
+        printf("Error reading input.");
+    }
+    return 0;
+}
+```
+
+## Differences Between `fgets` and `scanf`
+
+1. **Reading Method**:
+   - `fgets`: Reads a line of text until a newline character or the specified limit is reached. It reads the entire line as a string, including spaces.
+   - `scanf`: Reads formatted input based on format specifiers. It stops reading at whitespace unless instructed otherwise by the format string.
+
+2. **Buffer Handling**:
+   - `fgets`: Requires a buffer to store the read string and ensures null-termination.
+   - `scanf`: Stores the read data directly into the variables provided as arguments.
+
+3. **Input Safety**:
+   - `fgets`: Safer for reading strings as it prevents buffer overflow by limiting the number of characters read.
+   - `scanf`: More prone to buffer overflow if not used carefully, especially when reading strings without specifying the maximum width.
+
+4. **Whitespace Handling**:
+   - `fgets`: Includes newline characters and spaces in the read string.
+   - `scanf`: Ignores leading whitespace and stops reading a string at the first whitespace character unless specified otherwise.
+
+5. **Usage Scenarios**:
+   - `fgets`: Preferred for reading entire lines of text or when input needs to be processed as a string.
+   - `scanf`: Suitable for reading multiple types of data formatted in a specific way (e.g., integers, characters, floating-point numbers).
+
+### Example Comparison
+
+**Using `fgets` to Read a String**:
+```c
+#include <stdio.h>
+
+int main() {
+    char buffer[100];
+    printf("Enter a string: ");
+    fgets(buffer, sizeof(buffer), stdin);
+    printf("You entered: %s", buffer);
+    return 0;
+}
+```
+
+**Using `scanf` to Read a String**:
+```c
+#include <stdio.h>
+
+int main() {
+    char buffer[100];
+    printf("Enter a string: ");
+    scanf("%99s", buffer); // %99s ensures no buffer overflow
+    printf("You entered: %s", buffer);
+    return 0;
+}
+```
+
+In the `scanf` example, `%99s` ensures that at most 99 characters are read, preventing buffer overflow. However, `scanf` stops reading at the first whitespace, making it less suitable for input containing spaces compared to `fgets`.
+
+---
+
+## `scanf` Format Specifiers
+
+`scanf` in C provides a wide range of format specifiers to read different types of input. Here are the main categories of format specifiers:
+
+### Integer Formats
+
+- `%d` : Reads a decimal integer.
+- `%i` : Reads an integer (accepts decimal, hexadecimal, and octal).
+- `%u` : Reads an unsigned decimal integer.
+- `%o` : Reads an octal integer.
+- `%x` or `%X` : Reads a hexadecimal integer.
+
+### Floating-Point Formats
+
+- `%f` : Reads a floating-point number (float).
+- `%lf` : Reads a floating-point number (double).
+- `%Lf` : Reads a floating-point number (long double).
+- `%e`, `%E`, `%g`, `%G` : Reads a floating-point number (float, double, or long double) in scientific notation.
+
+### Character Formats
+
+- `%c` : Reads a single character.
+- `%s` : Reads a string (stops at whitespace).
+- `%[...]` : Reads a set of characters defined by the set inside the brackets (e.g., `%[^,]` reads until a comma).
+
+### Pointer Formats
+
+- `%p` : Reads a pointer (address in hexadecimal).
+
+### Other Formats
+
+- `%n` : Returns the number of characters read so far.
+- `%%` : Reads a literal percent sign.
+
+### Field Width
+
+Each of these format specifiers can also be modified with a field width. For example, `%5d` reads at most 5 digits for an integer.
+
+### Example of `%[^,]`
+
+The `%[...]` format specifier allows you to specify a set of characters to include or exclude when reading a string. The `%[^,]` format specifier means "read a string until a comma is encountered".
+
+Here is an example demonstrating the use of `%[^,]`:
+```c
+#include <stdio.h>
+
+int main() {
+    char str[100];
+    printf("Enter a string (up to the first comma): ");
+    scanf("%[^,]", str); // Reads until a comma is encountered
+    printf("You entered: %s\n", str);
+    return 0;
+}
+```
+
+### Full List of Common `scanf` Format Specifiers
+
+1. **Integer**:
+   - `%d` : Decimal integer
+   - `%i` : Integer (accepts decimal, hexadecimal, and octal)
+   - `%u` : Unsigned decimal integer
+   - `%o` : Octal integer
+   - `%x`, `%X` : Hexadecimal integer
+
+2. **Floating-Point**:
+   - `%f` : Floating-point number (float)
+   - `%lf` : Floating-point number (double)
+   - `%Lf` : Floating-point number (long double)
+   - `%e`, `%E`, `%g`, `%G` : Floating-point number (scientific notation)
+
+3. **Character and String**:
+   - `%c` : Single character
+   - `%s` : String (stops at whitespace)
+   - `%[...]` : Scanset (e.g., `%[^,]` to read until a comma)
+
+4. **Pointer**:
+   - `%p` : Pointer (address in hexadecimal)
+
+5. **Other**:
+   - `%n` : Number of characters read so far
+   - `%%` : Literal percent sign
+
+6. **Field Width**:
+   - `%5d` : Reads at most 5 digits for an integer
+   - `%9s` : Reads at most 9 characters for a string
+
+---
+
+## Example Programs
+
+Here is a polished version of the code snippets you provided:
+
+1. **Input a String of Maximal 79 Characters**:
+
+```c
+#include <stdio.h>
+#include <string.h>
+
+int main() {
+    char buffer[80];  // Array to hold the input string. 80 to include space for null terminator.
+
+    printf("Enter a string (max 79 characters): ");
+    if (fgets(buffer, sizeof(buffer), stdin) != NULL) {
+        // fgets reads up to sizeof(buffer) - 1 characters and adds a null terminator
+        // Remove the trailing newline character if present
+        size_t len = strlen(buffer);
+        if (len > 0 && buffer[len - 1] == '\n') {
+            buffer[len - 1] = '\0';
+        }
+        printf("You entered: %s\n", buffer);
+    } else {
+        printf("Error reading input.\n");
+    }
+
+    return 0;
+}
+```
+
+2. **Function to Reverse a String**:
+
+```c
+#include <stdio.h>
+#include <string.h>
+
+// Function to reverse a string
+void reverseString(char *str) {
+    int len = strlen(str);  // Get the length of the string
+    char temp;
+    int start = 0;
+    int end = len - 1;
+    
+    // Swap characters from start and end moving towards the center
+    while (start < end) {
+        temp = str[start];
+        str[start] = str[end];
+        str[end] = temp;
+        start++;
+        end--;
+    }
+}
+
+int main() {
+    char str[80];  // Array to hold the input string
+
+    printf("Enter a string: ");
+    if (fgets(str, sizeof(str), stdin) != NULL) {
+        // Remove the trailing newline character if present
+        size_t len = strlen(str);
+        if (len > 0 && str[len - 1] == '\n') {
+            str[len - 1] = '\0';
+        }
+
+        reverseString(str);  // Call the function to reverse the string
+        printf("Reversed string: %s\n", str);
+    } else {
+        printf("Error reading input.\n");
+    }
+
+    return 0;
+}
+```
+
+3. **Function to Extract Alphabetic Characters**:
+
+```c
+#include <stdio.h>
+#include <ctype.h>
+
+// Function to check if a character is alphabetic
+int isAlphabetic(char c) {
+    // Check if the character is between 'A' and 'Z' or 'a' and 'z'
+    return (c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z');
+}
+
+// Function to filter alphabetic characters from the input string
+void filterAlphabetic(const char *input, char *output) {
+    while (*input) {  // While not at the end of the string
+        if (isAlphabetic(*input)) {  // Check if the character is alphabetic
+            *output = *input;  // Copy the alphabetic character
+            output++;  // Move to the next position in the output string
+        }
+        input++;  // Move to the next character in the input string
+    }
+    *output = '\0';  // Null-terminate the output string
+}
+
+int main() {
+    char input[80];
+    char output[80];  // Array to hold the filtered string
+
+    printf("Enter a string (max 79 characters): ");
+    if (fgets(input, sizeof(input), stdin) != NULL) {
+        // Remove the trailing newline character if present
+        size_t len = strlen(input);
+        if (len > 0 && input[len - 1] == '\n') {
+            input[len - 1] = '\0';
+        }
+
+        // Call the function to filter alphabetic characters
+        filterAlphabetic(input, output);
+
+        // Print the filtered string
+        printf("Filtered string: %s\n", output);
+    } else {
+        printf("Error reading input.\n");
+    }
+
+    return 0;
+}
+```
+
+4. **Detect and Print Anagrams**:
+
+```c
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <ctype.h>
+
+#define MAX_STRINGS 1000
+#define MAX_LENGTH 99
+
+// Function to normalize a string (remove non-alphanumeric characters, convert to lowercase, and sort)
+void normalizeString(const char *input, char *output) {
+    int count[256] = {0};
+    int index = 0;
+
+    // Count occurrences of each alphanumeric character
+    while (*input) {
+        if (isalnum((unsigned char)*input)) {
+            count[tolower((unsigned char)*input)]++;
+        }
+        input++;
+    }
+
+    // Build the sorted normalized string
+    for (char c = 'a'; c <= 'z'; c++) {
+        for (int i = 0; i < count[c]; i++) {
+            output[index++] = c;
+        }
+    }
+    for (char c = '0'; c <= '9'; c++) {
+        for (int i = 0; i < count[c]; i++) {
+            output[index++] = c;
+        }
+    }
+    output[index] = '\0';  // Null-terminate the string
+}
+
+// Function to check if two strings are anagrams
+int isAnagram(const char *str1, const char *str2) {
+    char norm1[MAX_LENGTH + 1];
+    char norm2[MAX_LENGTH + 1];
+
+    normalizeString(str1, norm1);
+    normalizeString(str2, norm2);
+
+    return strcmp(norm1, norm2) == 0;
+}
+
+// Function to print sets of anagrams
+void printAnagramSets(char strings[MAX_STRINGS][MAX_LENGTH + 1], int count) {
+    int used[MAX_STRINGS] = {0};  // Array to keep track of which strings have been processed
+
+    for (int i = 0; i < count; i++) {
+        if (!used[i]) {
+            printf("#set %d:\n", i + 1);
+            used[i] = 1;  // Mark this string as processed
+
+            // Print all anagrams of strings[i]
+            for (int j = 0; j < count; j++) {
+                if (i != j && !used[j] && isAnagram(strings[i], strings[j])) {
+                    printf("%s\n", strings[j]);
+                    used[j] = 1;  // Mark as processed
+                }
+            }
+
+            // Print the original string
+            printf("%s\n", strings[i]);
+        }
+    }
+}
+
+int main() {
+    char input[MAX_STRINGS][MAX_LENGTH + 1]; // Array to hold input strings
+    int count = 0;
+
+    // Read input strings
+    while (fgets(input[count], sizeof(input[count]), stdin) && count < MAX_STRINGS) {
+        // Remove the trailing newline character if present
+        size_t len = strlen(input[count]);
+        if (len > 0 && input[count][len - 1] == '\n') {
+            input[count][len - 1] = '\0';
+        }
+        count++;
+    }
+
+    // Print the sets of anagrams
+    printAnagramSets(input, count);
+
+    return 0;
+}
+```
+
+Here’s a consolidated and polished version of the code snippets for each problem:
+
+### 5. Handling CSV File Input and Sorting Cities
+
+```c
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#define MAX_CITIES 1000
+#define MAX_NAME_LENGTH 100
+
+// Structure to hold city data
+typedef struct {
+    char city[MAX_NAME_LENGTH];
+    int population;
+    float percent;
+} City;
+
+// Function prototypes
+void parse_csv(City cities[], int *count);
+void print_sorted_cities(const City cities[], int count);
+void find_highest_population(const City cities[], int count);
+int recursive_binary_search(const City cities[], int low, int high, const char *target);
+
+// Compare function for sorting cities by name
+int compare_by_name(const void *a, const void *b) {
+    return strcmp(((City *)a)->city, ((City *)b)->city);
+}
+
+// Main function
+int main(int argc, char *argv[]) {
+    City cities[MAX_CITIES];
+    int count = 0;
+
+    // Parse the CSV file
+    parse_csv(cities, &count);
+
+    // Sort the cities by name
+    qsort(cities, count, sizeof(City), compare_by_name);
+
+    // Print the sorted list in CSV format
+    printf("City, Population June 2020, % of national population June 2019\n");
+    print_sorted_cities(cities, count);
+
+    // Find and print the city with the highest population
+    find_highest_population(cities, count);
+
+    // Check if city name argument is provided
+    if (argc < 2) {
+        fprintf(stderr, "Usage: %s <city_name>\n", argv[0]);
+        return 1;
+    }
+
+    // Search for the given city
+    const char *givenCity = argv[1];
+    int index = recursive_binary_search(cities, 0, count - 1, givenCity);
+    if (index != -1) {
+        printf("City %s:", cities[index].city);
+        printf(", Population: %d\n", cities[index].population);
+    } else {
+        printf("City '%s' not found.\n", givenCity);
+    }
+
+    return 0;
+}
+
+// Function to parse the CSV file
+void parse_csv(City cities[], int *count) {
+    char buffer[1024];
+    FILE *file = stdin; // Read from standard input as file redirection will be used
+
+    // Skip the header line
+    fgets(buffer, sizeof(buffer), file);
+
+    while (fgets(buffer, sizeof(buffer), file) && *count < MAX_CITIES) {
+        City city;
+        char percentStr[10];
+
+        // Parse the city name
+        sscanf(buffer, "%[^,], %d, %s", city.city, &city.population, percentStr);
+
+        // Remove trailing '%' from the percentage and convert to float
+        percentStr[strlen(percentStr) - 1] = '\0';
+        city.percent = strtof(percentStr, NULL);
+
+        cities[(*count)++] = city;
+    }
+}
+
+// Function to print the sorted list in CSV format
+void print_sorted_cities(const City cities[], int count) {
+    for (int i = 0; i < count; i++) {
+        printf("%s, %d, %.2f%%\n", cities[i].city, cities[i].population, cities[i].percent);
+    }
+}
+
+// Function to find and print the city with the highest population
+void find_highest_population(const City cities[], int count) {
+    if (count == 0) {
+        printf("No city data available.\n");
+        return;
+    }
+
+    int maxIndex = 0;
+    for (int i = 1; i < count; i++) {
+        if (cities[i].population > cities[maxIndex].population) {
+            maxIndex = i;
+        }
+    }
+
+    printf("City with the highest population:\n");
+    printf("%s, %d, %.2f%%\n", cities[maxIndex].city, cities[maxIndex].population, cities[maxIndex].percent);
+}
+
+// Recursive binary search function
+int recursive_binary_search(const City cities[], int low, int high, const char *target) {
+    if (low > high) {
+        return -1;
+    }
+
+    int mid = low + (high - low) / 2;
+    int cmp = strcmp(cities[mid].city, target);
+
+    if (cmp == 0) {
+        return mid;
+    } else if (cmp < 0) {
+        return recursive_binary_search(cities, mid + 1, high, target);
+    } else {
+        return recursive_binary_search(cities, low, mid - 1, target);
+    }
+}
+```
+
+### 6. Extracting Pairs of Characters
+
+```c
+#include <stdio.h>
+#include <string.h>
+
+#define MAX_INPUT_SIZE 1000
+#define PAIR_SIZE 3  // 2 characters + 1 null terminator
+#define MAX_PAIRS 500 // Maximum number of pairs for an input length of 1000
+
+int main() {
+    char input[MAX_INPUT_SIZE];
+    char pairs[MAX_PAIRS][PAIR_SIZE];
+    int numPairs = 0;
+
+    // Read the input string
+    printf("Enter the input string: ");
+    scanf("%s", input);
+
+    // Get the length of the input string
+    int length = strlen(input);
+
+    // Process the string two characters at a time
+    for (int i = 0; i < length; i += 2) {
+        if (i + 1 < length) {
+            // Manually copy two characters into the pairs array
+            pairs[numPairs][0] = input[i];
+            pairs[numPairs][1] = input[i + 1];
+            pairs[numPairs][2] = '\0'; // Null-terminate the string
+            numPairs++;
+        }
+    }
+
+    // Print the results
+    printf("Extracted pairs:\n");
+    for (int i = 0; i < numPairs; i++) {
+        printf("[%s]\n", pairs[i]);
+    }
+
+    return 0;
+}
+```
+
+### 7. Extracting Variable Length Strings
+
+```c
+#include <stdio.h>
+#include <string.h>
+
+#define MAX_INPUT_SIZE 1000
+#define MAX_STRINGS 7
+#define MAX_STRING_LENGTH 100
+
+int main() {
+    char input[MAX_INPUT_SIZE];
+    char strings[MAX_STRINGS][MAX_STRING_LENGTH];
+    int index = 0;
+    int length;
+
+    // Read the input string
+    printf("Enter the input string: ");
+    scanf("%s", input);
+
+    // Get the length of the input string
+    int inputLength = strlen(input);
+
+    // Initialize the position to read from the input string
+    int pos = 0;
+
+    // Process the string
+    while (pos < inputLength && index < MAX_STRINGS) {
+        // Read the length of the next string
+        length = input[pos] - '0'; // Convert character to integer
+        pos++; // Move to the start of the actual string
+
+        // Check if the length is within acceptable bounds
+        if (length > 0 && length <= MAX_STRING_LENGTH - 1 && pos + length <= inputLength) {
+            // Copy the string into the array
+            strncpy(strings[index], &input[pos], length);
+            strings[index][length] = '\0'; // Null-terminate the string
+            index++;
+            pos += length; // Move to the start of the next string length
+        } else {
+            // Handle any unexpected cases
+            break;
+        }
+    }
+
+    // Print the results
+    printf("Extracted strings:\n");
+    for (int i = 0; i < index; i++) {
+        printf("[%s]\n", strings[i]);
+    }
+
+    return 0;
+}
+```
+
+### 8. Modifying the Value of `x` in `main` Using Pointers
+
+```c
+#include <stdio.h>
+
+/* Function prototype with a pointer to an integer */
+void changeX(int *x);
+
+int main(int argc, char **argv){
+    int x = 5;
+    printf("[main    before] x = %d\n", x);
+    changeX(&x);  // Pass the address of x to the function
+    printf("[main    after ] x = %d\n", x);
+    return 0;
+}
+
+void changeX(int *x){
+    printf("[changeX before] x = %d\n", *x);
+    *x = 9;  // Dereference the pointer to change the value of x
+    printf("[changeX after ] x = %d\n", *x);
+}
+```
+
+### 9. Finding Prime Numbers Using the Sieve of Eratosthenes
+**Sieve of Eratosthenes** 
+
+1. **Initialization**:
+   - Create a boolean array `isPrime` of size \( n + 1 \). Initialize all entries to `true`, assuming all numbers are prime.
+   - Set `isPrime[0]` and `isPrime[1]` to `false` since 0 and 1 are not prime numbers.
+
+2. **Sieve Process**:
+   - Start with the first prime number (2). For each number \( i \):
+     - If `isPrime[i]` is `true`, then \( i \) is a prime number.
+     - Mark all multiples of \( i \) (starting from \( i^2 \)) as `false`, indicating that they are not prime.
+   - Continue this process up to \( \sqrt{n} \), because any composite number \( n \) will have at least one factor less than or equal to \( \sqrt{n} \).
+
+3. **Extract Primes**:
+   - Iterate through the `isPrime` array. The indices with `true` values represent prime numbers.
+
+```c
+#include <stdio.h>
+#include <stdbool.h>
+
+#define MAX 1000
+
+int main() {
+    bool isPrime[MAX + 1];
+    int i, j;
+
+    // Initialize all entries as true
+    for (i = 0; i <= MAX; i++) {
+        isPrime[i] = true;
+    }
+
+    // 0 and 1 are not prime numbers
+    isPrime[0] = isPrime[1] = false;
+
+    // Implementing the Sieve of Eratosthenes
+    for (i = 2; i * i <= MAX; i++) {
+        if (isPrime[i]) {
+            // Mark multiples of i as not prime
+            for (j = i * i; j <= MAX; j += i) {
+                isPrime[j] = false;
+            }
+        }
+    }
+
+    // Print all prime numbers
+    printf("Prime numbers up to %d are:\n", MAX);
+    for (i = 2; i <= MAX; i++) {
+        if (isPrime[i]) {
+            printf("%d ", i);
+        }
+    }
+    printf("\n");
+
+    return 0;
+}
+```
