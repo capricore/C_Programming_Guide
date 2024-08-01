@@ -1,9 +1,5 @@
-1. 
+1. ### Include Guard 
 In C and C++ programming, `#ifndef` and `#endif` are used to prevent multiple inclusions of the same header file. This technique is called an **include guard**. It ensures that the contents of a header file are included only once during compilation, avoiding issues with multiple definitions and reducing compile time.
-
-Here’s a step-by-step explanation of how include guards work:
-
-### Include Guard Example
 
 Suppose you have a header file named `example.h`. The include guard for this file would look like this:
 
