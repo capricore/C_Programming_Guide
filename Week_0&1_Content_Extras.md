@@ -808,132 +808,165 @@ Here’s a consolidated and polished version of the code snippets for each probl
 ### 5. Handling CSV File Input and Sorting Cities
 
 ```c
+// A Touch Of Reality
+
 #include <stdio.h>
 #include <stdlib.h>
+#include <assert.h>
 #include <string.h>
 
-#define MAX_CITIES 1000
-#define MAX_NAME_LENGTH 100
+#define MAX_N 1000
+#define MAX_NAME_LEN 99
+#define NOTFOUND (-1)
 
-// Structure to hold city data
-typedef struct {
-    char city[MAX_NAME_LENGTH];
-    int population;
-    float percent;
-} City;
+typedef struct city city_t;
+struct city {
+	char name[MAX_NAME_LEN + 1];
+	int population;
+	double percent;
+};
 
-// Function prototypes
-void parse_csv(City cities[], int *count);
-void print_sorted_cities(const City cities[], int count);
-void find_highest_population(const City cities[], int count);
-int recursive_binary_search(const City cities[], int low, int high, const char *target);
+int readCities(city_t A[]);
+void printCities(city_t A[], int n); 
+void insertionSort(city_t A[], int n);
+int indexOfMax(city_t A[], int n);
+int search(city_t A[], int n, char *givenCity); 
+void printOvertaken(city_t cities[], int n); 
 
-// Compare function for sorting cities by name
-int compare_by_name(const void *a, const void *b) {
-    return strcmp(((City *)a)->city, ((City *)b)->city);
-}
-
-// Main function
 int main(int argc, char *argv[]) {
-    City cities[MAX_CITIES];
-    int count = 0;
+	assert (argc > 1);
+	char *givenCity = argv[1];
 
-    // Parse the CSV file
-    parse_csv(cities, &count);
+	city_t cities[MAX_N];
+	// 1. read & store cities
+	int n = readCities(cities);
 
-    // Sort the cities by name
-    qsort(cities, count, sizeof(City), compare_by_name);
+	// 2. sort arry by name & print
+	insertionSort(cities, n);
+	printf("LIST OF CITIES IN ALPHABETICAL ORDER\n");
+	printCities(cities, n);
+	printf("\n");
 
-    // Print the sorted list in CSV format
-    printf("City, Population June 2020, % of national population June 2019\n");
-    print_sorted_cities(cities, count);
+	// 3. find city with highest population
+	int imax = indexOfMax(cities, n);
+	printf("City with highest population: %s, population: %d\n",
+			cities[imax].name, cities[imax].population);
 
-    // Find and print the city with the highest population
-    find_highest_population(cities, count);
+	// 4. Find population of city givenCity
+	int i = search(cities, n, givenCity);
+	if (i != NOTFOUND) {
+		printf("City: %s, Population: %d\n", 
+		        cities[i].name, cities[i].population);
+	} else {
+		printf("City %s: NOTFOUND\n", givenCity);
+	}
 
-    // Check if city name argument is provided
-    if (argc < 2) {
-        fprintf(stderr, "Usage: %s <city_name>\n", argv[0]);
-        return 1;
-    }
+	// 5. print cities that givenCity overtakes in 2020  
+	printOvertaken(cities, n);
 
-    // Search for the given city
-    const char *givenCity = argv[1];
-    int index = recursive_binary_search(cities, 0, count - 1, givenCity);
-    if (index != -1) {
-        printf("City %s:", cities[index].city);
-        printf(", Population: %d\n", cities[index].population);
-    } else {
-        printf("City '%s' not found.\n", givenCity);
-    }
 
-    return 0;
+	return EXIT_SUCCESS;
 }
 
-// Function to parse the CSV file
-void parse_csv(City cities[], int *count) {
-    char buffer[1024];
-    FILE *file = stdin; // Read from standard input as file redirection will be used
+// read cities  
+int readCities(city_t A[]) {
+	int i;
+	// skips the header line
+	while( getchar() != '\n');
 
-    // Skip the header line
-    fgets(buffer, sizeof(buffer), file);
-
-    while (fgets(buffer, sizeof(buffer), file) && *count < MAX_CITIES) {
-        City city;
-        char percentStr[10];
-
-        // Parse the city name
-        sscanf(buffer, "%[^,], %d, %s", city.city, &city.population, percentStr);
-
-        // Remove trailing '%' from the percentage and convert to float
-        percentStr[strlen(percentStr) - 1] = '\0';
-        city.percent = strtof(percentStr, NULL);
-
-        cities[(*count)++] = city;
-    }
+	// reads data 
+	for (i = 0; i < MAX_N && scanf(" %[^,],%d,%lf%%", 
+	            A[i].name, &A[i].population, &A[i].percent) == 3; i++);
+	return i;
 }
 
-// Function to print the sorted list in CSV format
-void print_sorted_cities(const City cities[], int count) {
-    for (int i = 0; i < count; i++) {
-        printf("%s, %d, %.2f%%\n", cities[i].city, cities[i].population, cities[i].percent);
-    }
+// prints data in CSV format
+void printCities(city_t A[], int n) {
+	int i;
+	printf("City, Population June 2020, %% of national population June 2019\n");
+	for (i = 0; i < n; i++) {
+		printf("%s, %d, %.2lf%%\n", A[i].name, A[i].population, A[i].percent);
+	}
 }
 
-// Function to find and print the city with the highest population
-void find_highest_population(const City cities[], int count) {
-    if (count == 0) {
-        printf("No city data available.\n");
-        return;
-    }
-
-    int maxIndex = 0;
-    for (int i = 1; i < count; i++) {
-        if (cities[i].population > cities[maxIndex].population) {
-            maxIndex = i;
-        }
-    }
-
-    printf("City with the highest population:\n");
-    printf("%s, %d, %.2f%%\n", cities[maxIndex].city, cities[maxIndex].population, cities[maxIndex].percent);
+// sorts array in ascending order of name
+void insertionSort(city_t A[], int n) {
+	int i, j;
+	city_t x;
+	for (i = 1; i < n; i++) {
+		x = A[i];
+		for (j = i - 1; j >= 0 && strcmp(x.name, A[j].name) < 0; j-- ) {
+			A[j + 1] = A[j];
+		}
+		A[j + 1] = x;
+	}
 }
 
-// Recursive binary search function
-int recursive_binary_search(const City cities[], int low, int high, const char *target) {
-    if (low > high) {
-        return -1;
-    }
+// returns the index of the city with highest population
+int indexOfMax(city_t A[], int n) {
+	int imax = 0;
+	int i;
+	for (i = 1; i < n; i++) {
+		if (A[i].population > A[imax].population) imax = i;
+	}
+	return imax;
+}
 
-    int mid = low + (high - low) / 2;
-    int cmp = strcmp(cities[mid].city, target);
 
-    if (cmp == 0) {
-        return mid;
-    } else if (cmp < 0) {
-        return recursive_binary_search(cities, mid + 1, high, target);
-    } else {
-        return recursive_binary_search(cities, low, mid - 1, target);
-    }
+// returns index of the city with name givenCity, or NOTFOUND 
+// using recursive binary search 
+int binSearch(city_t A[], int left, int right, char *key) {
+	if (left > right) 
+		return NOTFOUND;
+	int mid = (left + right)/2;
+	if (strcmp(key, A[mid].name) < 0)
+		return binSearch(A, left, right - 1, key);
+	else if (strcmp(key, A[mid].name) > 0)
+		return binSearch(A, left + 1, right, key);
+	else
+		return mid;
+}
+
+
+// returns index of the city with name givenCity, or NOTFOUND
+//   by calling binSearch
+int search(city_t A[], int n, char *givenCity) {
+	return binSearch(A, 0, n - 1, givenCity);
+}
+
+// return 1 if x overtakes y in 2020 in population
+int overtakes(city_t *x, city_t *y) {
+	return (x->population > y->population && x->percent < y->percent);
+}
+
+ 
+// prints cities ovetaken by givenCity, 
+//   and returns number of overtaken cities 
+int findOvertaken(city_t cities[], int n, char *givenCity) { 
+	int this = search(cities, n, givenCity);
+	int i;
+	int overtaken = 0;
+	if (this != NOTFOUND) 
+		for (i = 0; i < n; i++) {
+			if (overtakes(cities + this, cities + i)) { 
+				printf("%s overtakes %s in 2020 in population.\n", 
+					givenCity, cities[i].name);
+				overtaken++;
+			}
+		}
+	return overtaken;
+} 
+
+// prints all the cities that overtake some other cities
+void printOvertaken(city_t cities[], int n) {
+	int winners = 0, losers = 0, i;
+	printf("\nCITIES THAT OVERTAKE SOME OTHER IN 2020\n");
+	for (i = 0; i < n; i++) {
+		int tmp = findOvertaken(cities, n, cities[i].name);
+		winners += (tmp > 0);
+		losers += tmp;
+	}
+	printf("*** The list includes %d overtaking and %d overtaken cities\n", winners, losers);
 }
 ```
 
