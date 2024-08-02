@@ -713,88 +713,93 @@ int main() {
 #include <string.h>
 #include <ctype.h>
 
-#define MAX_STRINGS 1000
-#define MAX_LENGTH 99
+#define MAX_STRS 1000
+#define MAX_STR_LEN 99
 
-// Function to normalize a string (remove non-alphanumeric characters, convert to lowercase, and sort)
-void normalizeString(const char *input, char *output) {
-    int count[256] = {0};
-    int index = 0;
+#define NUM_LETTERS 26
+#define NUM_DIGITS 10
+#define SIZE (NUM_LETTERS + NUM_DIGITS)
 
-    // Count occurrences of each alphanumeric character
-    while (*input) {
-        if (isalnum((unsigned char)*input)) {
-            count[tolower((unsigned char)*input)]++;
-        }
-        input++;
-    }
+int read_strings(char ss[][MAX_STR_LEN + 1]);
+int is_anagram(char *s1, char *s2);
 
-    // Build the sorted normalized string
-    for (char c = 'a'; c <= 'z'; c++) {
-        for (int i = 0; i < count[c]; i++) {
-            output[index++] = c;
-        }
-    }
-    for (char c = '0'; c <= '9'; c++) {
-        for (int i = 0; i < count[c]; i++) {
-            output[index++] = c;
-        }
-    }
-    output[index] = '\0';  // Null-terminate the string
+int main(int argc, char *argv[]) {
+	char ss[MAX_STRS][MAX_STR_LEN + 1];
+	int n;   // number of strings
+	int printed[MAX_STRS] = {0}; // =1 if string was printed in a stored
+	int i, j, set = 0; 
+	n = read_strings(ss);
+	for (i = 0; i < n - 1; i++) {
+		if (printed[i]) continue;  // skips if string was printed before
+		int found = 0;              // flag for printing ss[i]  
+		for (j = i + 1; j < n; j++) {
+			if (is_anagram(ss[i], ss[j])) {
+				if (!found) {   // if first anagram of ss[i] found
+					printf("#set %d:\n", ++set);
+					printf("%s\n", ss[i]);
+					printed[i] = 1;  // marks ss[i] as printed
+					found = 1;
+				}
+				printf("%s\n", ss[j]);
+				printed[j] = 1;    // marks ss[j] as printed
+			}
+		}
+	}
+	return 0;
 }
 
-// Function to check if two strings are anagrams
-int isAnagram(const char *str1, const char *str2) {
-    char norm1[MAX_LENGTH + 1];
-    char norm2[MAX_LENGTH + 1];
-
-    normalizeString(str1, norm1);
-    normalizeString(str2, norm2);
-
-    return strcmp(norm1, norm2) == 0;
+int read_strings(char ss[][MAX_STR_LEN + 1]) {
+	int n = 0;
+	printf("Enter strings (max=%d characters each):\n", MAX_STR_LEN);
+	while ( fgets(ss[n], MAX_STR_LEN, stdin) ) {
+		if ( ss[n][strlen(ss[n]) - 1] == '\n' ) {
+			ss[n][strlen(ss[n]) - 1] = '\0';
+		}
+		n++;
+	}
+	// another version for the above loop, using scanf:
+	// for ( ; n<MAX_STRS && scanf(" %[^\n]",ss[n])==1; n++);
+	return n;
 }
 
-// Function to print sets of anagrams
-void printAnagramSets(char strings[MAX_STRINGS][MAX_LENGTH + 1], int count) {
-    int used[MAX_STRINGS] = {0};  // Array to keep track of which strings have been processed
-
-    for (int i = 0; i < count; i++) {
-        if (!used[i]) {
-            printf("#set %d:\n", i + 1);
-            used[i] = 1;  // Mark this string as processed
-
-            // Print all anagrams of strings[i]
-            for (int j = 0; j < count; j++) {
-                if (i != j && !used[j] && isAnagram(strings[i], strings[j])) {
-                    printf("%s\n", strings[j]);
-                    used[j] = 1;  // Mark as processed
-                }
-            }
-
-            // Print the original string
-            printf("%s\n", strings[i]);
-        }
-    }
+/* count frequencies of alphabetic characters in s, ignoring case
+   frequencies will be stored in array freq[36],
+   where freq[0] is frequency of 'A', freq[1] is frequency of 'B'...
+         freq[26] is frequnecy of '0', freq[27] is frequency of '1',...
+*/
+void count_freq(char *s, int freq[]) {   
+	int i; char *p;    
+	for(i = 0; i < SIZE; i++) freq[i]= 0;
+	for (p = s; *p; p++) {
+		if (isalpha(*p)) {
+			freq[ toupper(*p) - 'A' ]++;
+			// if c is A,B,C, ..., Z , p-'A' is 0,1,2,...,25 
+		} else if (isdigit(*p)){
+			freq[ NUM_LETTERS + (*p - '0')]++;
+			// if c is digit '0','1',...'9', p-'0' is integer 0,1,...9
+		}
+	}
 }
 
-int main() {
-    char input[MAX_STRINGS][MAX_LENGTH + 1]; // Array to hold input strings
-    int count = 0;
-
-    // Read input strings
-    while (fgets(input[count], sizeof(input[count]), stdin) && count < MAX_STRINGS) {
-        // Remove the trailing newline character if present
-        size_t len = strlen(input[count]);
-        if (len > 0 && input[count][len - 1] == '\n') {
-            input[count][len - 1] = '\0';
-        }
-        count++;
-    }
-
-    // Print the sets of anagrams
-    printAnagramSets(input, count);
-
-    return 0;
+/* 
+  returns 1 if the two strings contain the same letters & digits, 
+     possibly in a different order, and 0 otherwise, 
+     ignoring whitespace characters, and ignoring case
+  in addition, ignoring any non-alphanumeric characters,
+*/
+int is_anagram(char *s1, char *s2) {
+	int f1[SIZE], f2[SIZE];   /* frequencies for s1 ans s2 */
+	int i;
+	int has_alnum = 0;
+	count_freq(s1, f1);
+	count_freq(s2, f2);
+	for (i = 0; i < SIZE; i++) {
+		if (f1[i] != f2[i]) return 0;
+		if (f1[i]) has_alnum = 1;
+	}
+	// here, f1 and f2 are identical, and each array has at least one non-zero values
+	//   --> the corresponding strings are anagram
+	return has_alnum;
 }
 ```
 
