@@ -104,7 +104,7 @@ int delete_suburb_records(SuburbRecord **head_ref, const char *suburb_name) {
 void write_remaining_records(SuburbRecord *head, FILE *output) {
     // Write the header to the output file
     fprintf(output, "COMP20003 Code,Official Code Suburb,Official Name Suburb,Year,Official Code State,Official Name State,Official Code Local Government Area,Official Name Local Government Area,Latitude,Longitude\n");
-
+    
     SuburbRecord *current = head;
     while (current != NULL) {
         fprintf(output, "%d,%d,%s,%d,%d,%s,%s,%s,%f,%f\n",
@@ -139,6 +139,7 @@ int main(int argc, char *argv[]) {
             search_suburbs(head, query, output);
         }
     } else if (stage == 2) {
+        int total_deleted = 0;
         char query[MAX_FIELD_LENGTH];
         while (fgets(query, sizeof(query), stdin)) {
             query[strcspn(query, "\n")] = '\0'; // Remove newline character
@@ -147,9 +148,11 @@ int main(int argc, char *argv[]) {
                 printf("%s --> NOTFOUND\n", query);
             } else {
                 printf("%s --> %d records deleted\n", query, deleted);
+                total_deleted += deleted;
             }
         }
         write_remaining_records(head, output);
+        printf("Total records deleted: %d\n", total_deleted);
     } else {
         fprintf(stderr, "Invalid stage: %d\n", stage);
         exit(EXIT_FAILURE);
