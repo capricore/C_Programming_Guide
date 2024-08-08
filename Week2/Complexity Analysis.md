@@ -39,7 +39,7 @@
 - **For Two Functions f(n) and g(n):**
   - We say f(n) is in O(g(n))  if:
     - There exist constants  c_0  and  N_0  such that
-       f(n) \leq c_0 \cdot g(n)  for all  n > N_0 .
+       f(n) < c_0 * g(n)  for all  n > N_0 .
   - We are interested in the behavior as  n  becomes very large.
 
 - **Asymptotic Behavior:**
@@ -49,13 +49,13 @@
 
 - **Example 1:**
   -  T(n) = 4n^2  is in  O(n^2) 
-  -  4n^2 \leq c_0 \cdot n^2  for all  n > N_0 
-  - Example:  4n^2 \leq 5n^2  for all  n > 0 
+  -  4n^2 < c_0 * n^2  for all  n > N_0 
+  - Example:  4n^2 < 5n^2  for all  n > 0 
 
 - **Example 2:**
   -  T(n) = n^2 + 2n + 8  is in  O(n^2) 
-  -  n^2 + 2n + 8 \leq c_0 \cdot n^2  for all  n > N_0 
-  - Example:  n^2 + 2n + 8 \leq 11n^2  for all  n > 1 
+  -  n^2 + 2n + 8 < c_0 * n^2  for all  n > N_0 
+  - Example:  n^2 + 2n + 8 < 11n^2  for all  n > 1 
   
 ### Big-O Heuristics
 
@@ -104,18 +104,68 @@
 ### Big-Omega (Ω) Notation
 
 - **Definition**: Big-Omega (Ω) notation represents the **lower bound** of an algorithm's time or space complexity. It indicates the minimum amount of time or space an algorithm will require, regardless of input size.
-- **Formal Definition**: A function \( f(n) \) is said to be in \( \Omega(g(n)) \) if there exist constants \( c \) and \( N_0 \) such that for all \( n > N_0 \):
-  \[ f(n) \geq c \cdot g(n) \]
+- **Formal Definition**: A function  f(n)  is said to be in  Ω(g(n))  if there exist constants  c  and  N_0  such that for all  n > N_0 :
+  f(n) > c * g(n)
 - **Purpose**: Provides a guarantee that the function will not run faster than a certain rate.
 
 ### Big-Theta (Θ) Notation
 
 - **Definition**: Big-Theta (Θ) notation represents a **tight bound** on the time or space complexity of an algorithm. It describes both the upper and lower bounds, giving an exact asymptotic behavior.
-- **Formal Definition**: A function \( f(n) \) is said to be in \( \Theta(g(n)) \) if there exist constants \( c_1 \), \( c_2 \), and \( N_0 \) such that for all \( n > N_0 \):
-  \[ c_1 \cdot g(n) \leq f(n) \leq c_2 \cdot g(n) \]
-- **Purpose**: Provides a precise characterization of the function's growth rate, indicating that \( f(n) \) grows at the same rate as \( g(n) \).
+- **Formal Definition**: A function  f(n)  is said to be in  Θ(g(n))  if there exist constants  c_1 ,  c_2 , and  N_0  such that for all  n > N_0 :
+  c_1 * g(n) < f(n) < c_2 * g(n)
+- **Purpose**: Provides a precise characterization of the function's growth rate, indicating that  f(n)  grows at the same rate as  g(n) .
 
 ### Summary
 
-- **Big-Omega (Ω)**: Describes the lower bound of the growth rate. It tells you that the function will not grow slower than \( g(n) \).
-- **Big-Theta (Θ)**: Provides a tight bound, describing both the upper and lower bounds. It indicates that the function grows at the same rate as \( g(n) \).
+- **Big-Omega (Ω)**: Describes the lower bound of the growth rate. It tells you that the function will not grow slower than  g(n) .
+- **Big-Theta (Θ)**: Provides a tight bound, describing both the upper and lower bounds. It indicates that the function grows at the same rate as  g(n) .
+
+### Complexity Analysis
+
+- **Description**: Complexity analysis describes how the performance of an algorithm changes as the size of the input grows.
+
+- **Asymptotic Behaviour**:
+  - Focuses on the performance of an algorithm as the input size becomes very large.
+  - Helps in understanding how the algorithm scales and what its long-term behavior will be.
+
+- **Big-O Notation**:
+  - **Purpose**: Classifies algorithms based on their complexity.
+  - **Definition**: Provides an upper bound on the performance of an algorithm.
+  - **Focus**: Usually describes the worst-case performance, which ensures that the algorithm performs within this bound in the most challenging scenarios.
+
+### Sorted or unsorted?
+### Unsorted Array with Linear Search
+
+- **Insertion Time Complexity**:  O(n) 
+- **Lookup Time Complexity**:  O(n)  per lookup
+- **Total Time Complexity for m Lookups**:  O(m * n) 
+
+### Sorted Array with Binary Search
+
+- **Insertion Time Complexity**:  O(n^2)  (due to the need to maintain order)
+- **Lookup Time Complexity**:  O(log n)  per lookup
+- **Total Time Complexity for m Lookups**:  O(m * log n) 
+
+### Efficiency Comparison
+
+- **For Insertion**:
+  - **Unsorted Array**:  O(n)  for each insertion, so  n  insertions take  O(n^2)  in total.
+  - **Sorted Array**:  O(n^2)  for each insertion due to maintaining order.
+
+  If you are primarily concerned with insertion, an unsorted array is more efficient because its insertion time complexity is linear relative to the number of elements, while a sorted array involves more complex operations.
+
+- **For Lookup**:
+  - **Unsorted Array**: Each lookup takes  O(n) , so  m  lookups take  O(m * n) .
+  - **Sorted Array**: Each lookup takes  O(log n) , so  m  lookups take  O(m * log n) .
+
+  If you are primarily concerned with lookup performance, a sorted array is more efficient because binary search has logarithmic time complexity, which is significantly faster than linear search for large  n .
+
+### Overall Efficiency
+
+- **For Frequent Lookups**: The sorted array with binary search is generally more efficient for lookups, especially when  m  is large relative to  n . The total complexity for lookups  O(m * log n)  is usually much better than  O(m * n)  of an unsorted array.
+
+- **For Frequent Insertions**: The unsorted array is more efficient if the number of insertions is high, as its insertion complexity is lower than that of a sorted array.
+
+**Summary**:
+- **If you need to perform many lookups and fewer insertions**, the sorted array with binary search is typically more efficient.
+- **If you need to perform many insertions and fewer lookups**, the unsorted array is usually more efficient.
