@@ -1,7 +1,7 @@
 #ifndef DICT_H
 #define DICT_H
 
-#define MAX_FIELD_LENGTH 127
+#define MAX_FIELD_LENGTH 128
 
 typedef struct SuburbRecord {
     int comp20003_code;
@@ -16,6 +16,14 @@ typedef struct SuburbRecord {
     double longitude;
     struct SuburbRecord *next;
 } SuburbRecord;
-SuburbRecord *load_data(const char *filename);
-void search_suburbs(SuburbRecord *head, const char *query, FILE *output);
+
+typedef struct {
+    SuburbRecord *head;
+} Dictionary;
+
+Dictionary *create_dictionary();
+void free_dictionary(Dictionary *dict);
+void add_record(Dictionary *dict, SuburbRecord *record);
+int delete_suburb_records(Dictionary *dict, const char *suburb_name);
+
 #endif // DICT_H
