@@ -28,7 +28,12 @@ int main(int argc, char *argv[]) {
         while (fgets(query, sizeof(query), stdin)) {
             query[strcspn(query, "\n")] = '\0'; // Remove newline character
             SearchResult *results = search_suburbs(dict, query);
-            print_search_results(results, output);
+            int founded = print_search_results(results, output);
+            if (founded == 0) {
+                printf("%s --> NOTFOUND\n", query);
+            } else {
+                printf("%s --> %d records found\n", query, founded);
+            }
             free_search_results(results);
         }
     } else if (stage == 2) {

@@ -7,16 +7,20 @@
 
 char *parse_field(char **line) {
     char *field = malloc(MAX_FIELD_LENGTH * sizeof(char));
+    if (!field) {
+        perror("Failed to allocate memory for field");
+        exit(EXIT_FAILURE);
+    }
+
+    char *start = field;
     if (**line == '"') { // indicating the start of a quoted field.
         (*line)++; // Moves the pointer past the starting double quote.
-        char *start = field; // Saves the start of the buffer.
         while (**line != '"' && **line != '\0') {
             *field++ = *(*line)++;
         }
         *field = '\0';
         if (**line == '"') (*line)++;
     } else { // Handles the case where the field is not quoted.
-        char *start = field;
         while (**line != ',' && **line != '\0') {
             *field++ = *(*line)++;
         }

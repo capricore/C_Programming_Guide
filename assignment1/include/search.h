@@ -3,9 +3,9 @@
 
 #include "dict.h"
 
-typedef struct {
+typedef struct SearchResult {
     SuburbRecord *record;
-    // Add more fields here if needed for search result metadata
+    struct SearchResult *next;
 } SearchResult;
 
 SearchResult *search_suburbs(Dictionary *dict, const char *query);

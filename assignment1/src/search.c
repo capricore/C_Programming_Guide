@@ -27,12 +27,8 @@ SearchResult *search_suburbs(Dictionary *dict, const char *query) {
     return results;
 }
 
-void print_search_results(SearchResult *results, FILE *output) {
-    if (results == NULL) {
-        fprintf(output, "NOTFOUND\n");
-        return;
-    }
-
+int print_search_results(SearchResult *results, FILE *output) {
+    int count = 0;
     while (results) {
         SuburbRecord *record = results->record;
         fprintf(output, "COMP20003 Code: %d, Official Code Suburb: %d, Official Name Suburb: %s, Year: %d, Official Code State: %d, Official Name State: %s, Official Code Local Government Area: %s, Official Name Local Government Area: %s, Latitude: %.6lf, Longitude: %.6lf\n",
@@ -40,7 +36,9 @@ void print_search_results(SearchResult *results, FILE *output) {
                 record->year, record->official_code_state, record->official_name_state,
                 record->official_code_lga, record->official_name_lga, record->latitude, record->longitude);
         results = results->next;
+        count++;
     }
+    return count;
 }
 
 void free_search_results(SearchResult *results) {
