@@ -37,7 +37,6 @@ int main(int argc, char *argv[]) {
             free_search_results(results);
         }
     } else if (stage == 2) {
-        int total_deleted = 0;
         char query[MAX_FIELD_LENGTH];
         while (fgets(query, sizeof(query), stdin)) {
             query[strcspn(query, "\n")] = '\0'; // Remove newline character
@@ -46,11 +45,9 @@ int main(int argc, char *argv[]) {
                 printf("%s --> NOTFOUND\n", query);
             } else {
                 printf("%s --> %d records deleted\n", query, deleted);
-                total_deleted += deleted;
             }
         }
         write_remaining_records(dict, output);
-        printf("Total records deleted: %d\n", total_deleted);
     } else {
         fprintf(stderr, "Invalid stage: %d\n", stage);
         exit(EXIT_FAILURE);
