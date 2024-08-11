@@ -28,11 +28,11 @@ int main(int argc, char *argv[]) {
         while (fgets(query, sizeof(query), stdin)) {
             query[strcspn(query, "\n")] = '\0'; // Remove newline character
             SearchResult *results = search_suburbs(dict, query);
-            int founded = print_search_results(results, output);
-            if (founded == 0) {
+            print_search_results(results, output, query);
+            if (!results || results->count == 0) {
                 printf("%s --> NOTFOUND\n", query);
             } else {
-                printf("%s --> %d records found\n", query, founded);
+                printf("%s --> %d records found\n", query, results->count);
             }
             free_search_results(results);
         }
