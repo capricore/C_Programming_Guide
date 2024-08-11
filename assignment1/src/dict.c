@@ -4,6 +4,10 @@
 
 Dictionary *create_dictionary() {
     Dictionary *dict = (Dictionary *)malloc(sizeof(Dictionary));
+    if (!dict) {
+        perror("Failed to allocate memory for dictionary");
+        exit(EXIT_FAILURE);
+    }
     dict->head = NULL;
     return dict;
 }
