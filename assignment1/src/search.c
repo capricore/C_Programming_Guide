@@ -48,7 +48,7 @@ void print_search_results(SearchResult *results, FILE *output, const char *query
     // Iterate through the linked list of SuburbRecords
     SuburbRecord *record = results->records; // Start with the head of the linked list
     while (record) {
-        fprintf(output, "COMP20003 Code: %d, Official Code Suburb: %d, Official Name Suburb: %s, Year: %d, Official Code State: %d, Official Name State: %s, Official Code Local Government Area: %s, Official Name Local Government Area: %s, Latitude: %.6lf, Longitude: %.6lf\n",
+        fprintf(output, "COMP20003 Code: %d, Official Code Suburb: %d, Official Name Suburb: %s, Year: %d, Official Code State: %d, Official Name State: %s, Official Code Local Government Area: %s, Official Name Local Government Area: %s, Latitude: %lf, Longitude: %lf\n",
                 record->comp20003_code, record->official_code_suburb, record->official_name_suburb,
                 record->year, record->official_code_state, record->official_name_state,
                 record->official_code_lga, record->official_name_lga, record->latitude, record->longitude);
