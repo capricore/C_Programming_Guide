@@ -3,9 +3,9 @@
 A Binary Search Tree (BST) is a type of binary tree where each node contains a comparable key (and an associated value) and satisfies the binary search property:
 
 - **Binary Tree**: A tree where each node has at most two children.
-- **Binary Search Property**: For every node \( n \):
-  - All keys in the left subtree are less than \( n.key \).
-  - All keys in the right subtree are greater than \( n.key \).
+- **Binary Search Property**: For every node n:
+  - All keys in the left subtree are less than n.key.
+  - All keys in the right subtree are greater than n.key.
 
 ### Operations on a BST
 
@@ -18,34 +18,34 @@ A Binary Search Tree (BST) is a type of binary tree where each node contains a c
 
 The time complexity of operations on BSTs varies depending on the tree's structure.
 
-#### Best Average Case Behavior: \( O(\log n) \)
+#### Best Average Case Behavior: O(log n)
 
-- **Balanced BSTs**: When a BST is balanced (e.g., AVL Tree, Red-Black Tree), the height of the tree is \( \log n \). This balance ensures that insertion, deletion, and search operations all have an average-case time complexity of \( O(\log n) \).
+- **Balanced BSTs**: When a BST is balanced (e.g., AVL Tree, Red-Black Tree), the height of the tree is log n. This balance ensures that insertion, deletion, and search operations all have an average-case time complexity of O(log n).
 
-#### Worst Case Behavior: \( O(n) \)
+#### Worst Case Behavior: O(n)
 
 - **Degenerate (Unbalanced) Tree**: In the worst case, a BST can become unbalanced, resembling a linked list. This can occur if nodes are inserted in sorted order, leading to a tree where each node has only one child.
-- **Time Complexity**: In this scenario, the tree's height becomes \( n \), and the time complexity for insertion, deletion, and search operations degrades to \( O(n) \).
+- **Time Complexity**: In this scenario, the tree's height becomes n, and the time complexity for insertion, deletion, and search operations degrades to O(n).
 
 #### Summary of Time Complexities
 
 - **Search**:
-  - Average Case: \( O(\log n) \)
-  - Worst Case: \( O(n) \)
+  - Average Case: O(log n)
+  - Worst Case: O(n)
 - **Insertion**:
-  - Average Case: \( O(\log n) \)
-  - Worst Case: \( O(n) \)
+  - Average Case: O(log n)
+  - Worst Case: O(n)
 - **Deletion**:
-  - Average Case: \( O(\log n) \)
-  - Worst Case: \( O(n) \)
+  - Average Case: O(log n)
+  - Worst Case: O(n)
 
 ### Considering Worst Case Time Complexity
 
-When analyzing algorithms, the worst-case time complexity is often considered to ensure efficient performance in unfavorable scenarios. For BSTs, the worst-case time complexity is \( O(n) \) when the tree is unbalanced.
+When analyzing algorithms, the worst-case time complexity is often considered to ensure efficient performance in unfavorable scenarios. For BSTs, the worst-case time complexity is O(n) when the tree is unbalanced.
 
 ### Ensuring Balanced Trees
 
-To prevent the worst-case behavior, self-balancing BSTs like AVL Trees and Red-Black Trees can be used. These trees automatically adjust their structure during insertions and deletions to maintain balance, ensuring that the height remains \( O(\log n) \) and operations have optimal time complexity.
+To prevent the worst-case behavior, self-balancing BSTs like AVL Trees and Red-Black Trees can be used. These trees automatically adjust their structure during insertions and deletions to maintain balance, ensuring that the height remains O(log n) and operations have optimal time complexity.
 
 #### AVL Trees
 
@@ -231,7 +231,7 @@ Red-Black Trees offer efficient performance with fewer rotations compared to AVL
 
 ### Conclusion
 
-- **AVL Trees**: Maintain strict balance with a balance factor and perform rotations to ensure \( O(\log n) \) time complexity for insertions, deletions, and searches.
+- **AVL Trees**: Maintain strict balance with a balance factor and perform rotations to ensure O(log n) time complexity for insertions, deletions, and searches.
 - **Red-Black Trees**: Ensure balance with node coloring and provide efficient performance, usually requiring fewer rotations compared to AVL Trees.
 
-Both AVL and Red-Black Trees ensure balanced structures, offering \( O(\log n) \) time complexity for key operations, regardless of input data order. These self-balancing trees are widely used in practice due to their efficiency and performance guarantees.
+Both AVL and Red-Black Trees ensure balanced structures, offering O(log n) time complexity for key operations, regardless of input data order. These self-balancing trees are widely used in practice due to their efficiency and performance guarantees.

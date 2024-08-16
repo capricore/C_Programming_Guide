@@ -50,7 +50,7 @@ A **Complete Binary Tree** is a type of binary tree with the following propertie
   - A complete binary tree of height `h` can have between \(2^h\) and \(2^{h+1} - 1\) nodes.
 
 - **Height**:
-  - The height of a complete binary tree with `n` nodes is \(\lfloor \log_2(n) \rfloor\).
+  - The height of a complete binary tree with `n` nodes is \(\lfloor log_2(n) \rfloor\).
 
 ### Use Cases
 
@@ -135,35 +135,35 @@ For a BST like:
 - **Smallest Item**: Move left from the root until you reach a node with no left child.
 - **Largest Item**: Move right from the root until you reach a node with no right child.
 
-These operations are efficient with a time complexity of \( O(h) \), where \( h \) is the height of the tree.
+These operations are efficient with a time complexity of O(h), where h is the height of the tree.
 
 ### Time Complexity of Binary Search Trees (BSTs)
 
 The time complexity of operations in a BST depends on the tree’s structure:
 
 #### Best Case: Balanced Tree
-- **Height of Tree**: For balanced BSTs (e.g., AVL Trees, Red-Black Trees), the height is approximately \( \log_2(n) \), where \( n \) is the number of nodes.
-- **Operations**: Search, insertion, and deletion all have a time complexity of \( O(\log n) \) in the best case.
+- **Height of Tree**: For balanced BSTs (e.g., AVL Trees, Red-Black Trees), the height is approximately log_2(n), where n is the number of nodes.
+- **Operations**: Search, insertion, and deletion all have a time complexity of O(log n) in the best case.
   
 **Explanation**: 
 - A balanced tree maintains a logarithmic height, which ensures efficient operations due to its compact and balanced nature.
 
 #### Worst Case: Degenerate Tree (Linked List)
-- **Height of Tree**: In the worst case, where the BST degenerates into a linked list, the height is \( n \), the number of nodes.
-- **Operations**: Search, insertion, and deletion all have a time complexity of \( O(n) \) in the worst case.
+- **Height of Tree**: In the worst case, where the BST degenerates into a linked list, the height is n, the number of nodes.
+- **Operations**: Search, insertion, and deletion all have a time complexity of O(n) in the worst case.
   
 **Explanation**: 
 - When nodes are inserted in sorted order, each new node becomes a right child of the previous node, resulting in a linear height similar to a linked list.
 
 ### Summary
 
-- **Balanced Tree**: Height \( \log_2(n) \)
-  - **Operations**: \( O(\log n) \) for search, insertion, and deletion.
-  - **Path Length**: Longest and average paths are both \( \log_2(n) \).
+- **Balanced Tree**: Height log_2(n)
+  - **Operations**: O(log n) for search, insertion, and deletion.
+  - **Path Length**: Longest and average paths are both log_2(n).
 
-- **Degenerate Tree**: Height \( n \)
-  - **Operations**: \( O(n) \) for search, insertion, and deletion.
-  - **Path Length**: Longest path is \( n \), average path is approximately \( \frac{n}{2} \).
+- **Degenerate Tree**: Height n
+  - **Operations**: O(n) for search, insertion, and deletion.
+  - **Path Length**: Longest path is n, average path is approximately \frac{n}{2}.
 
 ### Traversal in Data Structures
 
