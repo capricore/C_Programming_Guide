@@ -1,3 +1,60 @@
+A binary tree is a hierarchical data structure where each node has at most two children, known as the left child and the right child. Here's a more detailed explanation:
+
+### Structure of a Binary Tree
+
+1. **Node**: The fundamental part of a binary tree. Each node contains:
+   - A value or data.
+   - A pointer/reference to the left child.
+   - A pointer/reference to the right child.
+```plaintext
+      10
+     /  \
+    5    15
+   / \   / \
+  3   7 12  20
+```
+2. **Root**: The topmost node of the binary tree, serving as the starting point of the tree.
+
+3. **Children**: Nodes that are connected to another node (parent node) in a tree structure.
+
+4. **Leaf Nodes**: Nodes that do not have any children. They are the end nodes of the tree.
+
+5. **Internal Nodes**: Nodes that have at least one child.
+
+6. **Subtree**: Any node in a tree along with its descendants can be considered a subtree.
+
+### Properties of Binary Trees
+
+1. **Height of a Tree**: The length of the longest path from the root to a leaf. The height of a tree with a single node is 0.
+
+2. **Depth of a Node**: The number of edges from the root to the node.
+
+3. **Level of a Node**: The number of edges from the root to the node plus one.
+
+### Types of Binary Trees
+
+1. **Full Binary Tree**: A binary tree in which every node other than the leaves has exactly two children.
+```plaintext
+       1
+      / \
+     2   3
+        / \
+        4  5 
+```
+2. **Complete Binary Tree**: A binary tree in which all levels, except possibly the last, are fully filled, and all nodes are as far left as possible.
+```plaintext
+       1
+      / \
+     2   3
+    / \ / \
+   4  5 6
+```
+4. **Perfect Binary Tree**: A binary tree in which all internal nodes have exactly two children and all leaf nodes are at the same level.
+
+5. **Balanced Binary Tree**: A binary tree where the height of the left and right subtrees of every node differ by at most one.
+
+6. **Binary Search Tree (BST)**: A binary tree in which the left subtree of a node contains only nodes with values less than the node’s value, and the right subtree contains only nodes with values greater than the node’s value.
+
 ## Binary Search Trees (BSTs)
 
 A Binary Search Tree (BST) is a type of binary tree where each node contains a comparable key (and an associated value) and satisfies the binary search property:
@@ -7,10 +64,39 @@ A Binary Search Tree (BST) is a type of binary tree where each node contains a c
   - All keys in the left subtree are less than n.key.
   - All keys in the right subtree are greater than n.key.
 
+Here is the BST example:
+```plaintext
+        50
+       /  \
+      30   70
+     / \   / \
+    20 40 60 80
+```
+
 ### Operations on a BST
 
 - **Insertion**: Adding a new node while maintaining the binary search property.
+Insert 65:
+```plaintext
+        50
+       /  \
+      30   70
+     / \   / \
+    20 40 60 80
+           \
+           65
+```
 - **Deletion**: Removing a node and ensuring the tree continues to satisfy the binary search property.
+Delete 70:
+```plaintext
+        50
+       /  \
+      30   80
+     / \   / 
+    20 40 60
+           \
+           65
+```
 - **Search**: Finding a node with a given key.
 - **Traversal**: Visiting all nodes in a specific order (in-order, pre-order, post-order).
 
@@ -54,14 +140,168 @@ An AVL Tree is a self-balancing BST where the height difference between the left
 **Key Operations**:
 
 - **Insertion**: Updates balance factors and performs rotations (single or double) if a node becomes unbalanced.
+```plaintext
+  20
+ /  \
+10  40
+    /  \
+   30  50
+```
+Insert 25:
+```plaintext
+  20
+ /  \
+10  40
+    /  \
+   30  50
+  /
+ 25
+```
 - **Deletion**: Updates balance factors and performs rotations as needed to restore balance.
 
 **Rotations**:
+Here's a summary of the different types of rotations used in AVL trees to maintain balance, including Left Rotation, Right-Left Rotation, and Left-Right Rotation:
 
-- **Right Rotation (RR Rotation)**: Applied when a left subtree is heavier.
-- **Left Rotation (LL Rotation)**: Applied when a right subtree is heavier.
-- **Left-Right Rotation (LR Rotation)**: A combination of left and right rotations.
-- **Right-Left Rotation (RL Rotation)**: A combination of right and left rotations.
+### 1. **Right Rotation (RR Rotation)**
+
+**Purpose:** To balance an AVL tree when the tree becomes unbalanced due to an insertion in the right subtree of the right child.
+
+**Diagram:**
+```plaintext
+    A
+     \
+      B
+       \
+        C
+```
+
+**After Right Rotation:**
+```plaintext
+    B
+   / \
+  A   C
+```
+
+**Steps:**
+- Node B becomes the new root.
+- Node A becomes the left child of Node B.
+- Node C remains the right child of Node B.
+
+---
+
+### 2. **Left Rotation (LL Rotation)**
+
+**Purpose:** To balance an AVL tree when the tree becomes unbalanced due to an insertion in the left subtree of the left child.
+
+**Diagram:**
+```plaintext
+    A
+   /
+  B
+ /
+C
+```
+
+**After Left Rotation:**
+```plaintext
+    B
+   / \
+  C   A
+```
+
+**Steps:**
+- Node B becomes the new root.
+- Node C becomes the left child of Node B.
+- Node A becomes the right child of Node B.
+
+---
+
+### 3. **Left-Right Rotation (LR Rotation)**
+
+**Purpose:** To balance an AVL tree when the tree becomes unbalanced due to an insertion in the right subtree of the left child.
+
+**Diagram:**
+```plaintext
+    A
+   /
+  B
+   \
+    C
+```
+
+**Steps:**
+1. **Left Rotation on Node B:**
+   - Perform a left rotation on Node B to convert it into an LL case:
+```plaintext
+    A
+   /
+  C
+ /
+B
+```
+
+2. **Right Rotation on Node A:**
+   - Perform a right rotation on Node A:
+```plaintext
+       C
+      / \
+     B   A
+```
+
+**Result:**
+- Node C becomes the new root.
+- Node B becomes the left child of Node C.
+- Node A becomes the right child of Node C.
+
+---
+
+### 4. **Right-Left Rotation (RL Rotation)**
+
+**Purpose:** To balance an AVL tree when the tree becomes unbalanced due to an insertion in the left subtree of the right child.
+
+**Diagram:**
+```plaintext
+    A
+     \
+      B
+     /
+    C
+```
+
+**Steps:**
+1. **Right Rotation on Node B:**
+   - Perform a right rotation on Node B to convert it into an RR case:
+```plaintext
+    A
+     \
+      C
+       \
+        B
+```
+
+2. **Left Rotation on Node A:**
+   - Perform a left rotation on Node A:
+```plaintext
+       C
+      / \
+     A   B
+```
+
+**Result:**
+- Node C becomes the new root.
+- Node A becomes the left child of Node C.
+- Node B becomes the right child of Node C.
+
+---
+
+### Summary
+
+- **Right Rotation (RR Rotation)**: Balances the tree when an insertion causes the right subtree of the right child to be deeper.
+- **Left Rotation (LL Rotation)**: Balances the tree when an insertion causes the left subtree of the left child to be deeper.
+- **Left-Right Rotation (LR Rotation)**: Balances the tree when an insertion causes the right subtree of the left child to be deeper.
+- **Right-Left Rotation (RL Rotation)**: Balances the tree when an insertion causes the left subtree of the right child to be deeper.
+
+Each rotation type helps maintain the AVL tree's balance property, ensuring that the tree remains balanced for efficient operations.
 
 **Example Implementation in C**:
 
