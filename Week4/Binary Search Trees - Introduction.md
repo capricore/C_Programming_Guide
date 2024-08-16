@@ -90,15 +90,8 @@ If you have a complete binary tree with `n = 7` nodes:
 
 ### Summary
 
-- The height of a complete binary tree with `n` nodes is given by \(\lfloor \log_2(n) \rfloor\).
+- The height of a complete binary tree with `n` nodes is given by $\lfloor \log_2(n) \rfloor$.
 - This formula helps determine the maximum height based on the number of nodes and is useful for understanding the structure and properties of complete binary trees.
-### Use Cases
-
-- **Heap Data Structures**:
-  - Binary Heaps (Min-Heaps and Max-Heaps) are often implemented as complete binary trees for efficient operations.
-
-- **Array Representation**:
-  - Complete binary trees can be efficiently represented in arrays due to their compact structure.
 
 ### Conclusion
 
