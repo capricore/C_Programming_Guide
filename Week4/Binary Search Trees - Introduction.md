@@ -45,13 +45,53 @@ A **Complete Binary Tree** is a type of binary tree with the following propertie
    - The last level nodes (4, 5, 6) are not packed as far left as possible (node 6 is not leftmost).
 
 ### Properties of a Complete Binary Tree
+The height of a complete binary tree with `n` nodes can be calculated, but it's important to note the exact definition of a complete binary tree and how the height is determined:
 
-- **Number of Nodes**:
-  - A complete binary tree of height `h` can have between \(2^h\) and \(2^{h+1} - 1\) nodes.
+### Height of a Complete Binary Tree
 
-- **Height**:
-  - The height of a complete binary tree with `n` nodes is \(\lfloor log_2(n) \rfloor\).
+1. **Definition of Height**:
+   - The height of a tree is defined as the length of the longest path from the root to a leaf node.
+   - In a tree with a height `h`, the number of levels is `h + 1`, where level 0 is the root level.
 
+2. **Complete Binary Tree**:
+   - A complete binary tree is a type of binary tree where all levels, except possibly the last, are completely filled, and all nodes are as far left as possible.
+
+### Calculation of Height
+
+For a complete binary tree:
+- **Minimum Nodes at Height `h`**: \(2^h\)
+- **Maximum Nodes at Height `h`**: \(2^{h+1} - 1\)
+
+Given `n` nodes in a complete binary tree:
+
+- **Height `h`** can be calculated as:
+  h = $\lfloor \log_2(n) \rfloor$
+
+  This formula comes from the fact that the number of nodes in a complete binary tree of height `h` can range from \(2^h\) (the minimum number of nodes) to \(2^{h+1} - 1\) (the maximum number of nodes).
+
+### Example
+
+If you have a complete binary tree with `n = 7` nodes:
+
+- **Height Calculation**:
+  h = $\lfloor \log_2(7) \rfloor$ = $\lfloor 2.807 \rfloor$ = 2
+
+- **Tree Structure**:
+  The tree will look like:
+  ```
+       1
+     /   \
+    2     3
+   / \   / \
+  4   5 6   7
+  ```
+
+  This tree has a height of `2` (with levels `0`, `1`, and `2`).
+
+### Summary
+
+- The height of a complete binary tree with `n` nodes is given by \(\lfloor \log_2(n) \rfloor\).
+- This formula helps determine the maximum height based on the number of nodes and is useful for understanding the structure and properties of complete binary trees.
 ### Use Cases
 
 - **Heap Data Structures**:
