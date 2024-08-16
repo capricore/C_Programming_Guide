@@ -258,9 +258,7 @@ Traversal involves visiting each node in a data structure exactly once and perfo
       Queue* queue = createQueue();
       enqueue(queue, root);
       while (!isEmpty(queue)) {
-          struct Node
-
-* node = dequeue(queue);
+          struct Node *node = dequeue(queue);
           printf("%d ", node->key);
           if (node->left != NULL) enqueue(queue, node->left);
           if (node->right != NULL) enqueue(queue, node->right);
