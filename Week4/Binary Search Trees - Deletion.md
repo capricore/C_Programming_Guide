@@ -6,13 +6,13 @@ Deleting a node from a BST requires careful handling to maintain the tree's prop
 
 - **Operation**: Simply remove the node.
 - **Example**:
-  ```plaintext
+```plaintext
     30
    /  \
   20   40
  / \
 10  25
-  ```
+```
   Deleting node 10 (a leaf node):
   ```plaintext
     30
@@ -79,13 +79,13 @@ Deleting node 20:
    - The in-order successor of 20 is 25 (the smallest value in 20's right subtree).
 
 2. **Replace Node 20 with 25**:
-   ```plaintext
+```plaintext
    30
   /  \
  25   40
  /     \
 10     50
-   ```
+```
 
 3. **Delete Node 25**:
    - Node 25 is now a leaf node and can be simply removed.
