@@ -285,7 +285,7 @@ The B-tree is a powerful data structure designed for efficient storage and retri
    ```
       [30 50 70]
     /   |    |    \
-  [10 20]->[30 40]->[50 60]->[70 80 90] <-- linked list of leaves
+   [10 20]->[30 40]->[50 60]->[70 80 90] <-- linked list of leaves
    ```
    
 ### Key Points in the B+ Tree:
