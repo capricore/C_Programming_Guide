@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "search.h"
+#include "../include/search.h"
 
 SearchResult *search_suburbs(Dictionary *dict, const char *query) {
     SuburbRecord *current = dict->head;
@@ -10,7 +10,7 @@ SearchResult *search_suburbs(Dictionary *dict, const char *query) {
         perror("Failed to allocate memory for SearchResult");
         exit(EXIT_FAILURE);
     }
-    results->records = NULL;
+    results->record = NULL;
     results->count = 0;
 
     while (current) {
@@ -24,8 +24,8 @@ SearchResult *search_suburbs(Dictionary *dict, const char *query) {
             record_copy->next = NULL;
 
             // Insert the record at the beginning of the list
-            record_copy->next = results->records;
-            results->records = record_copy;
+            record_copy->next = results->record;
+            results->record = record_copy;
 
             results->count++;
         }
@@ -46,7 +46,7 @@ void print_search_results(SearchResult *results, FILE *output, const char *query
     }
 
     // Iterate through the linked list of SuburbRecords
-    SuburbRecord *record = results->records; // Start with the head of the linked list
+    SuburbRecord *record = results->record; // Start with the head of the linked list
     while (record) {
         fprintf(output, "COMP20003 Code: %d, Official Code Suburb: %d, Official Name Suburb: %s, Year: %d, Official Code State: %d, Official Name State: %s, Official Code Local Government Area: %s, Official Name Local Government Area: %s, Latitude: %lf, Longitude: %lf\n",
                 record->comp20003_code, record->official_code_suburb, record->official_name_suburb,
@@ -58,7 +58,7 @@ void print_search_results(SearchResult *results, FILE *output, const char *query
 
 void free_search_results(SearchResult *results) {
     if (results) {
-        SuburbRecord *current = results->records;
+        SuburbRecord *current = results->record;
         while (current) {
             SuburbRecord *next = current->next; // Store the next node
             free(current); // Free the current node

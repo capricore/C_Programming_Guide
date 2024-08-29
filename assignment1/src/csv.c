@@ -1,7 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "csv.h"
+#include "../include/csv.h"
+#include "../include/patricia.h"
 
 #define MAX_RECORD_LENGTH 511
 
@@ -90,4 +91,42 @@ void write_remaining_records(Dictionary *dict, FILE *output) {
                 current->official_code_lga, current->official_name_lga, current->latitude, current->longitude);
         current = current->next;
     }
+}
+
+// Function to load data from the CSV file and insert into the Patricia tree
+void loadData(const char *filename, PatriciaNode **root) {
+    FILE *file = fopen(filename, "r");
+    if (!file) {
+        perror("Failed to open file");
+        exit(EXIT_FAILURE);
+    }
+
+    char buffer[MAX_RECORD_LENGTH];
+    fgets(buffer, sizeof(buffer), file); // Skip the header line
+
+    while (fgets(buffer, sizeof(buffer), file)) {
+        SuburbRecord *new_record = malloc(sizeof(SuburbRecord));
+        if (!new_record) {
+            perror("Failed to allocate memory");
+            exit(EXIT_FAILURE);
+        }
+
+        char *line = buffer;
+        new_record->comp20003_code = atoi(parse_field(&line)); // int atoi(const char *str); used to convert a string to an integer
+        new_record->official_code_suburb = atoi(parse_field(&line));
+        strncpy(new_record->official_name_suburb, parse_field(&line), MAX_FIELD_LENGTH - 1);
+        new_record->year = atoi(parse_field(&line));
+        new_record->official_code_state = atoi(parse_field(&line));
+        strncpy(new_record->official_name_state, parse_field(&line), MAX_FIELD_LENGTH - 1);
+        strncpy(new_record->official_code_lga, parse_field(&line), MAX_FIELD_LENGTH - 1);
+        strncpy(new_record->official_name_lga, parse_field(&line), MAX_FIELD_LENGTH - 1);
+        new_record->latitude = atof(parse_field(&line));
+        new_record->longitude = atof(parse_field(&line));
+        new_record->next = NULL;
+
+        // Insert the record into the Patricia tree
+        *root = insertPatriciaNode(*root, new_record->official_name_suburb, new_record);
+    }
+
+    fclose(file);
 }

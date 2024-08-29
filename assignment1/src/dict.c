@@ -1,6 +1,6 @@
 #include <stdlib.h>
 #include <string.h>
-#include "dict.h"
+#include "../include/dict.h"
 
 Dictionary *create_dictionary() {
     Dictionary *dict = (Dictionary *)malloc(sizeof(Dictionary));
