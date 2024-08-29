@@ -187,6 +187,40 @@ PatriciaNode *insertPatriciaNode(PatriciaNode *root, char *key, SuburbRecord *re
     return root;
 }
 
+void find_closet_record(PatriciaNode *current, SuburbRecord* closestRecord, QueryResult* result, const char *suburbQuery, int *minEditDistance) {
+    if (!current)
+    {
+        return;
+    }
+    if (!current->branchA && !current->branchB) {
+        result->stringComparisons++;
+        printf("closestRecord: %s, end", current->record->official_name_suburb);
+        char *queryBinaries = convertStringAsBinary(suburbQuery);
+        printf("queryBinaries: %s", queryBinaries);
+        char *subNameBinaries = convertStringAsBinary(current->record->official_name_suburb);
+        printf("subNameBinaries: %s", subNameBinaries);
+        int currentDistance = editDistance(queryBinaries, subNameBinaries, strlen(queryBinaries), strlen(subNameBinaries));
+        printf("currentDistance: %d, minEditDistance: %d\n", currentDistance, *minEditDistance);
+        if (closestRecord == NULL)
+        {
+            closestRecord = current;
+        }        
+        if (currentDistance < *minEditDistance || 
+            currentDistance == *minEditDistance &&
+            strcmp(current->record->official_name_suburb, closestRecord->official_name_suburb) < 0) {
+            *minEditDistance = currentDistance;
+            closestRecord = current->record;
+        }
+        return;
+    }
+    if (current->branchA) {
+        find_closet_record(current->branchA, closestRecord, result, suburbQuery, minEditDistance);
+    }
+    if (current->branchB) {
+        find_closet_record(current->branchB, closestRecord, result, suburbQuery, minEditDistance);
+    }
+}
+
 QueryResult searchPatriciaTree(PatriciaNode *root, const char *suburbQuery) {
     QueryResult result;
     result.suburbQuery = strdup(suburbQuery);
@@ -209,47 +243,25 @@ QueryResult searchPatriciaTree(PatriciaNode *root, const char *suburbQuery) {
     printStringAsBinary(queryBinary);
     int mismatched = 0;
     while (current) {
-        if (!mismatched)
-        {
-            result.nodeAccesses++;
-        }
+        result.nodeAccesses++;
 
         // Compare the current node's prefix with the corresponding part of the suburb query
         printStringAsBinary(current->prefix);
-        if (!mismatched) {
-            for (int i = 0; i < current->prefixBits; i++) {
-                printf("i: %d\n", i);
-                int bitInKey = getBit(suburbQuery, bitIndex);
-                printf("bitInKey: %d\n", bitInKey);
-                int bitInPrefix = getBit(current->prefix, i);
-                printf("bitInPrefix: %d\n", bitInPrefix);
-                result.bitComparisons++;
-                bitIndex++;
-                if (bitInKey != bitInPrefix) {
-                    mismatched = 1;
-                    break;
-                }
+        for (int i = 0; i < current->prefixBits; i++) {
+            printf("i: %d\n", i);
+            int bitInKey = getBit(suburbQuery, bitIndex);
+            printf("bitInKey: %d\n", bitInKey);
+            int bitInPrefix = getBit(current->prefix, i);
+            printf("bitInPrefix: %d\n", bitInPrefix);
+            result.bitComparisons++;
+            bitIndex++;
+            if (bitInKey != bitInPrefix) {
+                mismatched = 1;
+                break;
             }
         }
-
-
-        // bitIndex += current->prefixBits;
-
-        // Check if we have reached a leaf node
-        if (!current->branchA && !current->branchB && mismatched) {
-            result.stringComparisons++;
-            printf("closestRecord: %s, end", current->record->official_name_suburb);
-            char *queryBinaries = convertStringAsBinary(suburbQuery);
-            printf("queryBinaries: %s", queryBinaries);
-            char *subNameBinaries = convertStringAsBinary(current->record->official_name_suburb);
-            printf("subNameBinaries: %s", subNameBinaries);
-            int currentDistance = editDistance(queryBinaries, subNameBinaries, strlen(queryBinaries), strlen(subNameBinaries));
-            printf("currentDistance: %d, minEditDistance: %d\n", currentDistance, minEditDistance);
-            if (currentDistance < minEditDistance) {
-                minEditDistance = currentDistance;
-                closestRecord = current->record;
-            }
-            // }
+        if (mismatched) {
+            break;
         }
 
         // Move to the next node in the Patricia tree
@@ -258,26 +270,23 @@ QueryResult searchPatriciaTree(PatriciaNode *root, const char *suburbQuery) {
             int nextBit = getBit(suburbQuery, bitIndex);
             current = nextBit ? current->branchB : current->branchA;
         } else {
-            printf("enter exact match\n");
             result.stringComparisons++;
-            if (!mismatched) {
-                current->record->official_name_suburb;
-                printf("enter exact match2\n");
-                // Exact match found
-                result.matchesFound = 1;
-                result.matches = malloc(sizeof(SuburbRecord *));
-                result.matches[0] = current->record;
-                return result;
-            }
-            printf("exact match end\n");
             break;  // End of the query string reached
         }
+    }
+    if (mismatched) {
+        find_closet_record(current, closestRecord, &result, suburbQuery, &minEditDistance);
+        result.matches = closestRecord;
+        // printf("closestRecord: %s", closestRecord->official_name_suburb);
+    }
+    else {
+        // Exact match found
+        result.matches = malloc(sizeof(SuburbRecord *));
+        result.matches[0] = current->record;
     }
 
     // If the search reaches here, no exact match was found
     result.matchesFound = 1;
-    result.matches = closestRecord;
-    printf("closestRecord: %s", closestRecord->official_name_suburb);
     return result;
 }
 
