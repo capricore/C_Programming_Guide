@@ -125,6 +125,7 @@ void loadData(const char *filename, PatriciaNode **root) {
         new_record->next = NULL;
 
         // Insert the record into the Patricia tree
+        printf("new_record: %s\n", new_record->official_name_suburb);
         *root = insertPatriciaNode(*root, new_record->official_name_suburb, new_record);
     }
 

@@ -118,13 +118,13 @@ PatriciaNode *insertPatriciaNode(PatriciaNode *root, char *key, SuburbRecord *re
     // Traverse the tree
     PatriciaNode *current = root;
     unsigned int bitIndex = 0;
-    printf("key: %s\n", key);
-    printStringAsBinary(key);
-    printStringAsBinary(current->prefix);
+    // printf("key: %s\n", key);
+    // printStringAsBinary(key);
+    // printStringAsBinary(current->prefix);
     while (bitIndex < current->prefixBits && getBit(key, bitIndex) == getBit(current->prefix, bitIndex)) {
         bitIndex++;
     }
-    printf("bitIndex: %d\n", bitIndex);
+    // printf("bitIndex: %d\n", bitIndex);
     // Mismatch found or end of the prefix
     if (bitIndex < current->prefixBits) {
         // Adjust the current node to represent the common prefix only
@@ -173,10 +173,10 @@ PatriciaNode *insertPatriciaNode(PatriciaNode *root, char *key, SuburbRecord *re
     char *newKey = createStem(key, bitIndex, strlen(key) * BITS_PER_BYTE - bitIndex);
     if (bitIndex < strlen(key) * BITS_PER_BYTE) {
         if (getBit(key, bitIndex)) {
-            printf("enter branchB\n");
+            // printf("enter branchB\n");
             current->branchB = insertPatriciaNode(current->branchB, newKey, record);
         } else {
-            printf("enter branchA\n");
+            // printf("enter branchA\n");
             current->branchA = insertPatriciaNode(current->branchA, newKey, record);            
         }
     } else {
@@ -207,54 +207,69 @@ QueryResult searchPatriciaTree(PatriciaNode *root, const char *suburbQuery) {
     int minEditDistance = INT_MAX;
     char *queryBinary = createStem(suburbQuery, 0, strlen(suburbQuery) * BITS_PER_BYTE);
     printStringAsBinary(queryBinary);
+    int mismatched = 0;
     while (current) {
-        result.nodeAccesses++;
+        if (!mismatched)
+        {
+            result.nodeAccesses++;
+        }
 
         // Compare the current node's prefix with the corresponding part of the suburb query
         printStringAsBinary(current->prefix);
-        for (int i = 0; i < current->prefixBits; i++) {
-            int bitInKey = getBit(suburbQuery, bitIndex + i);
-            int bitInPrefix = getBit(current->prefix, i);
-            result.bitComparisons++;
-            bitIndex++;
-
-            if (bitInKey != bitInPrefix) {
-                // Mismatch found, stop comparing further bits
-                bitIndex += i;
-                break;
+        if (!mismatched) {
+            for (int i = 0; i < current->prefixBits; i++) {
+                printf("i: %d\n", i);
+                int bitInKey = getBit(suburbQuery, bitIndex);
+                printf("bitInKey: %d\n", bitInKey);
+                int bitInPrefix = getBit(current->prefix, i);
+                printf("bitInPrefix: %d\n", bitInPrefix);
+                result.bitComparisons++;
+                bitIndex++;
+                if (bitInKey != bitInPrefix) {
+                    mismatched = 1;
+                    break;
+                }
             }
         }
+
 
         // bitIndex += current->prefixBits;
 
         // Check if we have reached a leaf node
-        if (!current->branchA && !current->branchB) {
+        if (!current->branchA && !current->branchB && mismatched) {
             result.stringComparisons++;
-            if (strncmp(suburbQuery, current->record->official_name_suburb, stringLen) == 0) {
-                printf("exact record: %s", current->record->official_name_suburb);
+            printf("closestRecord: %s, end", current->record->official_name_suburb);
+            char *queryBinaries = convertStringAsBinary(suburbQuery);
+            printf("queryBinaries: %s", queryBinaries);
+            char *subNameBinaries = convertStringAsBinary(current->record->official_name_suburb);
+            printf("subNameBinaries: %s", subNameBinaries);
+            int currentDistance = editDistance(queryBinaries, subNameBinaries, strlen(queryBinaries), strlen(subNameBinaries));
+            printf("currentDistance: %d, minEditDistance: %d\n", currentDistance, minEditDistance);
+            if (currentDistance < minEditDistance) {
+                minEditDistance = currentDistance;
+                closestRecord = current->record;
+            }
+            // }
+        }
+
+        // Move to the next node in the Patricia tree
+        if (bitIndex < stringLen * BITS_PER_BYTE) {
+            printf("enter bitIndex < stringLen * BITS_PER_BYTE\n");
+            int nextBit = getBit(suburbQuery, bitIndex);
+            current = nextBit ? current->branchB : current->branchA;
+        } else {
+            printf("enter exact match\n");
+            result.stringComparisons++;
+            if (!mismatched) {
+                current->record->official_name_suburb;
+                printf("enter exact match2\n");
                 // Exact match found
                 result.matchesFound = 1;
                 result.matches = malloc(sizeof(SuburbRecord *));
                 result.matches[0] = current->record;
                 return result;
-            } else {
-                // Mismatch found, calculate the edit distance
-                printf("closestRecord: %s", current->record->official_name_suburb);
-                char *remainQueryBinaries = convertStringAsBinary(createStem(suburbQuery, bitIndex, stringLen - bitIndex));
-                char *remainSubNameBinaries = convertStringAsBinary(createStem(current->record->official_name_suburb, bitIndex, strlen(current->record->official_name_suburb) * BITS_PER_BYTE - bitIndex));
-                int currentDistance = editDistance(remainQueryBinaries, remainSubNameBinaries, strlen(remainQueryBinaries), strlen(remainSubNameBinaries));
-                if (currentDistance < minEditDistance) {
-                    minEditDistance = currentDistance;
-                    closestRecord = current->record;
-                }
             }
-        }
-
-        // Move to the next node in the Patricia tree
-        if (bitIndex < stringLen * BITS_PER_BYTE) {
-            int nextBit = getBit(suburbQuery, bitIndex);
-            current = nextBit ? current->branchB : current->branchA;
-        } else {
+            printf("exact match end\n");
             break;  // End of the query string reached
         }
     }
@@ -262,7 +277,7 @@ QueryResult searchPatriciaTree(PatriciaNode *root, const char *suburbQuery) {
     // If the search reaches here, no exact match was found
     result.matchesFound = 1;
     result.matches = closestRecord;
-    // printf("closestRecord: %s", closestRecord->official_name_suburb);
+    printf("closestRecord: %s", closestRecord->official_name_suburb);
     return result;
 }
 
