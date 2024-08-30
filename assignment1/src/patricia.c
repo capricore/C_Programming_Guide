@@ -45,7 +45,7 @@ char *convertStringAsBinary(char *str) {
 
 
 void printStringAsBinary(const char *str) {
-    printf("%s -> ", str);
+    // printf("%s -> ", str);
     while (*str != '\0') {
         unsigned char ch = *str;
         for (int i = 7; i >= 0; i--) {
@@ -74,7 +74,7 @@ int getBit(char *s, unsigned int bitIndex) {
 }
 
 char *createStem(char *oldKey, unsigned int startBit, unsigned int numBits) {
-    printf("%s, %d, %d\n", oldKey, startBit, numBits);
+    // printf("%s, %d, %d\n", oldKey, startBit, numBits);
     assert(numBits > 0 && startBit >= 0 && oldKey);
 
     int extraBytes = 0;
@@ -194,13 +194,13 @@ void find_closet_record(PatriciaNode *current, SuburbRecord* closestRecord, Quer
     }
     if (!current->branchA && !current->branchB) {
         result->stringComparisons++;
-        printf("closestRecord: %s, end", current->record->official_name_suburb);
+        // printf("closestRecord: %s, end", current->record->official_name_suburb);
         char *queryBinaries = convertStringAsBinary(suburbQuery);
-        printf("queryBinaries: %s", queryBinaries);
+        // printf("queryBinaries: %s", queryBinaries);
         char *subNameBinaries = convertStringAsBinary(current->record->official_name_suburb);
-        printf("subNameBinaries: %s", subNameBinaries);
+        // printf("subNameBinaries: %s", subNameBinaries);
         int currentDistance = editDistance(queryBinaries, subNameBinaries, strlen(queryBinaries), strlen(subNameBinaries));
-        printf("currentDistance: %d, minEditDistance: %d\n", currentDistance, *minEditDistance);
+        // printf("currentDistance: %d, minEditDistance: %d\n", currentDistance, *minEditDistance);
         if (closestRecord == NULL)
         {
             closestRecord = current;
@@ -246,7 +246,7 @@ QueryResult searchPatriciaTree(PatriciaNode *root, const char *suburbQuery) {
         result.nodeAccesses++;
 
         // Compare the current node's prefix with the corresponding part of the suburb query
-        printStringAsBinary(current->prefix);
+        // printStringAsBinary(current->prefix);
         for (int i = 0; i < current->prefixBits; i++) {
             printf("i: %d\n", i);
             int bitInKey = getBit(suburbQuery, bitIndex);
@@ -266,7 +266,7 @@ QueryResult searchPatriciaTree(PatriciaNode *root, const char *suburbQuery) {
 
         // Move to the next node in the Patricia tree
         if (bitIndex < stringLen * BITS_PER_BYTE) {
-            printf("enter bitIndex < stringLen * BITS_PER_BYTE\n");
+            // printf("enter bitIndex < stringLen * BITS_PER_BYTE\n");
             int nextBit = getBit(suburbQuery, bitIndex);
             current = nextBit ? current->branchB : current->branchA;
         } else {

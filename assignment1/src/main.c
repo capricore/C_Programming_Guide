@@ -61,7 +61,6 @@ int main(int argc, char *argv[]) {
         fclose(output);
         free_dictionary(dict);
     } else if (stage == 4) {
-        printf("enter stage 4");
         PatriciaNode *root = NULL;
         FILE *output = fopen(output_file, "w");
         loadData(input_csv, &root);
