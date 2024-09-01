@@ -45,13 +45,11 @@ char *convertStringAsBinary(char *str) {
 
 
 void printStringAsBinary(const char *str) {
-    // printf("%s -> ", str);
     while (*str != '\0') {
         unsigned char ch = *str;
         for (int i = 7; i >= 0; i--) {
             printf("%d", (ch >> i) & 1);
         }
-        // printf(" ");  // Separate binary representations with a space
         str++;
     }
     printf("\n");
@@ -74,7 +72,6 @@ int getBit(char *s, unsigned int bitIndex) {
 }
 
 char *createStem(char *oldKey, unsigned int startBit, unsigned int numBits) {
-    // printf("%s, %d, %d\n", oldKey, startBit, numBits);
     assert(numBits > 0 && startBit >= 0 && oldKey);
 
     int extraBytes = 0;
@@ -103,13 +100,13 @@ char *createStem(char *oldKey, unsigned int startBit, unsigned int numBits) {
     return newStem;
 }
 
-PatriciaNode *insertPatriciaNode(PatriciaNode *root, char *key, SuburbRecord *record) {
+PatriciaNode *insertPatriciaNode(PatriciaNode *root, char *key, SuburbRecord *record, int *bitKeyIndex) {
     if (!root) {
         // Create a new node with the entire key as the prefix
         PatriciaNode *newNode = malloc(sizeof(PatriciaNode));
         assert(newNode);
         newNode->prefix = createStem(key, 0, strlen(key) * BITS_PER_BYTE);
-        newNode->prefixBits = strlen(key) * BITS_PER_BYTE;
+        newNode->prefixBits = strlen(key) * BITS_PER_BYTE + 8;
         newNode->branchA = newNode->branchB = NULL;
         newNode->record = record;
         return newNode;
@@ -118,13 +115,12 @@ PatriciaNode *insertPatriciaNode(PatriciaNode *root, char *key, SuburbRecord *re
     // Traverse the tree
     PatriciaNode *current = root;
     unsigned int bitIndex = 0;
-    // printf("key: %s\n", key);
     // printStringAsBinary(key);
     // printStringAsBinary(current->prefix);
-    while (bitIndex < current->prefixBits && getBit(key, bitIndex) == getBit(current->prefix, bitIndex)) {
+    while (bitIndex < current->prefixBits && getBit(key, *bitKeyIndex) == getBit(current->prefix, bitIndex)) {
         bitIndex++;
+        *bitKeyIndex += 1;
     }
-    // printf("bitIndex: %d\n", bitIndex);
     // Mismatch found or end of the prefix
     if (bitIndex < current->prefixBits) {
         // Adjust the current node to represent the common prefix only
@@ -143,7 +139,7 @@ PatriciaNode *insertPatriciaNode(PatriciaNode *root, char *key, SuburbRecord *re
         current->prefixBits = remainingBits;
 
         // Determine which branch the current node and the new node should go into
-        if (getBit(key, bitIndex)) {
+        if (getBit(key, *bitKeyIndex)) {
             splitNode->branchA = current;  // Current node goes into branchA
             splitNode->branchB = NULL;  // New node goes into branchB
         } else {
@@ -154,13 +150,19 @@ PatriciaNode *insertPatriciaNode(PatriciaNode *root, char *key, SuburbRecord *re
         // Create a new leaf node for the inserted key
         PatriciaNode *newLeaf = malloc(sizeof(PatriciaNode));
         assert(newLeaf);
-        newLeaf->prefix = createStem(key, bitIndex, strlen(key) * BITS_PER_BYTE - bitIndex);
-        newLeaf->prefixBits = strlen(key) * BITS_PER_BYTE - bitIndex;
+        if (*bitKeyIndex > strlen(key) * BITS_PER_BYTE)
+        {
+            newLeaf->prefix = '\0';
+            newLeaf->prefixBits = *bitKeyIndex- strlen(key) * BITS_PER_BYTE;
+
+        } else {
+            newLeaf->prefix = createStem(key, *bitKeyIndex, strlen(key) * BITS_PER_BYTE - *bitKeyIndex);
+            newLeaf->prefixBits = strlen(key) * BITS_PER_BYTE - *bitKeyIndex + 8;
+        }
         newLeaf->branchA = newLeaf->branchB = NULL;
         newLeaf->record = record;
-
         // Attach the new leaf node to the split node
-        if (getBit(key, bitIndex)) {
+        if (getBit(key, *bitKeyIndex)) {
             splitNode->branchB = newLeaf;
         } else {
             splitNode->branchA = newLeaf;
@@ -170,14 +172,11 @@ PatriciaNode *insertPatriciaNode(PatriciaNode *root, char *key, SuburbRecord *re
     }
 
     // If the entire prefix matches, go deeper into the tree
-    char *newKey = createStem(key, bitIndex, strlen(key) * BITS_PER_BYTE - bitIndex);
-    if (bitIndex < strlen(key) * BITS_PER_BYTE) {
-        if (getBit(key, bitIndex)) {
-            // printf("enter branchB\n");
-            current->branchB = insertPatriciaNode(current->branchB, newKey, record);
+    if (*bitKeyIndex < strlen(key) * BITS_PER_BYTE + 8) {
+        if (getBit(key, *bitKeyIndex)) {
+            current->branchB = insertPatriciaNode(current->branchB, key, record, bitKeyIndex);
         } else {
-            // printf("enter branchA\n");
-            current->branchA = insertPatriciaNode(current->branchA, newKey, record);            
+            current->branchA = insertPatriciaNode(current->branchA, key, record, bitKeyIndex);            
         }
     } else {
         // The key fully matches the current node's prefix, so just update the record
@@ -194,13 +193,9 @@ void find_closet_record(PatriciaNode *current, SuburbRecord* closestRecord, Quer
     }
     if (!current->branchA && !current->branchB) {
         result->stringComparisons++;
-        // printf("closestRecord: %s, end", current->record->official_name_suburb);
         char *queryBinaries = convertStringAsBinary(suburbQuery);
-        // printf("queryBinaries: %s", queryBinaries);
         char *subNameBinaries = convertStringAsBinary(current->record->official_name_suburb);
-        // printf("subNameBinaries: %s", subNameBinaries);
         int currentDistance = editDistance(queryBinaries, subNameBinaries, strlen(queryBinaries), strlen(subNameBinaries));
-        // printf("currentDistance: %d, minEditDistance: %d\n", currentDistance, *minEditDistance);
         if (closestRecord == NULL)
         {
             closestRecord = current;
@@ -240,7 +235,7 @@ QueryResult searchPatriciaTree(PatriciaNode *root, const char *suburbQuery) {
     SuburbRecord *closestRecord = NULL;
     int minEditDistance = INT_MAX;
     char *queryBinary = createStem(suburbQuery, 0, strlen(suburbQuery) * BITS_PER_BYTE);
-    printStringAsBinary(queryBinary);
+    // printStringAsBinary(queryBinary);
     int mismatched = 0;
     while (current) {
         result.nodeAccesses++;
@@ -248,11 +243,8 @@ QueryResult searchPatriciaTree(PatriciaNode *root, const char *suburbQuery) {
         // Compare the current node's prefix with the corresponding part of the suburb query
         // printStringAsBinary(current->prefix);
         for (int i = 0; i < current->prefixBits; i++) {
-            printf("i: %d\n", i);
             int bitInKey = getBit(suburbQuery, bitIndex);
-            printf("bitInKey: %d\n", bitInKey);
             int bitInPrefix = getBit(current->prefix, i);
-            printf("bitInPrefix: %d\n", bitInPrefix);
             result.bitComparisons++;
             bitIndex++;
             if (bitInKey != bitInPrefix) {
@@ -266,7 +258,6 @@ QueryResult searchPatriciaTree(PatriciaNode *root, const char *suburbQuery) {
 
         // Move to the next node in the Patricia tree
         if (bitIndex < stringLen * BITS_PER_BYTE) {
-            // printf("enter bitIndex < stringLen * BITS_PER_BYTE\n");
             int nextBit = getBit(suburbQuery, bitIndex);
             current = nextBit ? current->branchB : current->branchA;
         } else {
@@ -277,7 +268,6 @@ QueryResult searchPatriciaTree(PatriciaNode *root, const char *suburbQuery) {
     if (mismatched) {
         find_closet_record(current, closestRecord, &result, suburbQuery, &minEditDistance);
         result.matches = closestRecord;
-        // printf("closestRecord: %s", closestRecord->official_name_suburb);
     }
     else {
         // Exact match found

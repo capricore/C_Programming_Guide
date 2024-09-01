@@ -26,6 +26,6 @@ typedef struct {
 
 void loadData(const char *filename, PatriciaNode **root);
 QueryResult searchPatriciaTree(PatriciaNode *root, const char *suburbQuery);
-PatriciaNode *insertPatriciaNode(PatriciaNode *root, char *key, SuburbRecord *record);
+PatriciaNode *insertPatriciaNode(PatriciaNode *root, char *key, SuburbRecord *record, int * bitIndex);
 
 #endif // PATRICIA_H
