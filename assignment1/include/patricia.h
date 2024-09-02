@@ -28,5 +28,6 @@ void loadData(const char *filename, PatriciaNode **root);
 QueryResult *searchPatriciaTree(PatriciaNode *root, const char *suburbQuery);
 PatriciaNode *insertPatriciaNode(PatriciaNode *root, char *key, SuburbRecord *record, int * bitIndex);
 void outputSearchResults(FILE *outputFp, QueryResult *result);
+void freePatriciaTree(PatriciaNode *root);
 
 #endif // PATRICIA_H

@@ -82,6 +82,7 @@ int main(int argc, char *argv[]) {
             }
         }
         fclose(output);
+        freePatriciaTree(root);
     } else {
         fprintf(stderr, "Invalid stage: %d\n", stage);
         exit(EXIT_FAILURE);
