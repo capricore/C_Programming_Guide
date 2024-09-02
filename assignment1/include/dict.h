@@ -12,6 +12,8 @@ typedef struct SuburbRecord {
     char official_name_state[MAX_FIELD_LENGTH];
     char official_code_lga[MAX_FIELD_LENGTH];
     char official_name_lga[MAX_FIELD_LENGTH];
+    char isoCode[MAX_FIELD_LENGTH];
+    char type[MAX_FIELD_LENGTH];
     double latitude;
     double longitude;
     struct SuburbRecord *next;
