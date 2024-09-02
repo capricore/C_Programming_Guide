@@ -25,8 +25,8 @@ typedef struct {
 
 
 void loadData(const char *filename, PatriciaNode **root);
-QueryResult searchPatriciaTree(PatriciaNode *root, const char *suburbQuery);
+QueryResult *searchPatriciaTree(PatriciaNode *root, const char *suburbQuery);
 PatriciaNode *insertPatriciaNode(PatriciaNode *root, char *key, SuburbRecord *record, int * bitIndex);
-void outputSearchResults(FILE *outputFp, QueryResult result);
+void outputSearchResults(FILE *outputFp, QueryResult *result);
 
 #endif // PATRICIA_H

@@ -120,13 +120,15 @@ void loadData(const char *filename, PatriciaNode **root) {
         strncpy(new_record->official_name_state, parse_field(&line), MAX_FIELD_LENGTH - 1);
         strncpy(new_record->official_code_lga, parse_field(&line), MAX_FIELD_LENGTH - 1);
         strncpy(new_record->official_name_lga, parse_field(&line), MAX_FIELD_LENGTH - 1);
+        strncpy(new_record->isoCode, parse_field(&line), MAX_FIELD_LENGTH - 1);
+        strncpy(new_record->type, parse_field(&line), MAX_FIELD_LENGTH - 1);
         new_record->latitude = atof(parse_field(&line));
         new_record->longitude = atof(parse_field(&line));
         new_record->next = NULL;
 
         // Insert the record into the Patricia tree
-        // printf("new_record: %s\n", new_record->official_name_suburb);
-        // printStringAsBinary(new_record->official_name_suburb);
+        printf("new_record: %s, latitude: %lf\n", new_record->official_name_suburb, new_record->longitude);
+        printStringAsBinary(new_record->official_name_suburb);
         int bitIndex = 0;
         *root = insertPatriciaNode(*root, new_record->official_name_suburb, new_record, &bitIndex);
     }

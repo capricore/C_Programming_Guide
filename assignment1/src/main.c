@@ -72,11 +72,11 @@ int main(int argc, char *argv[]) {
         char query[MAX_FIELD_LENGTH];
         while (fgets(query, sizeof(query), stdin)) {
             query[strcspn(query, "\n")] = 0; // Remove newline character
-            QueryResult result = searchPatriciaTree(root, query);
-            if (result.matchesFound > 0) {
-                // outputSearchResults(output_file, result);
-                printf("%s --> %d records - comparisons: b%d n%d s%d\n", query, result.matchesFound,
-                    result.bitComparisons, result.nodeAccesses, result.stringComparisons);
+            QueryResult *result = searchPatriciaTree(root, query);
+            if (result->matchesFound > 0) {
+                outputSearchResults(output, result);
+                printf("%s --> %d records - comparisons: b%d n%d s%d\n", query, result->matchesFound,
+                    result->bitComparisons, result->nodeAccesses, result->stringComparisons);
             } else {
                 printf("%s --> NOTFOUND\n", query);
             }
