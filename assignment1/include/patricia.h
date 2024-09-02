@@ -11,7 +11,7 @@ typedef struct PatriciaNode {
     int prefixBits;                   // Number of bits in the prefix
     struct PatriciaNode *branchA;     // Child node A
     struct PatriciaNode *branchB;     // Child node B
-    SuburbRecord *record;             // Associated record
+    SuburbRecord *record;             // Associated records
 } PatriciaNode;
 
 typedef struct {
@@ -20,12 +20,13 @@ typedef struct {
     int bitComparisons;        // Number of bit comparisons made during the search
     int nodeAccesses;          // Number of nodes accessed during the search
     int stringComparisons;     // Number of string comparisons made
-    SuburbRecord **matches;    // Pointer to the array of matching records
+    SuburbRecord *matches;    // Pointer to the array of matching records
 } QueryResult;
 
 
 void loadData(const char *filename, PatriciaNode **root);
 QueryResult searchPatriciaTree(PatriciaNode *root, const char *suburbQuery);
 PatriciaNode *insertPatriciaNode(PatriciaNode *root, char *key, SuburbRecord *record, int * bitIndex);
+void outputSearchResults(FILE *outputFp, QueryResult result);
 
 #endif // PATRICIA_H

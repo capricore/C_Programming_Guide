@@ -100,6 +100,36 @@ char *createStem(char *oldKey, unsigned int startBit, unsigned int numBits) {
     return newStem;
 }
 
+void insertSuburbRecordSorted(SuburbRecord **head, SuburbRecord *newRecord) {
+    // If the list is empty or the new record should be at the head
+    if (*head == NULL || (*head)->comp20003_code >= newRecord->comp20003_code) {
+        newRecord->next = *head;
+        *head = newRecord;
+        return;
+    }
+
+    // Traverse the list to find the correct insertion point
+    SuburbRecord *current = *head;
+    while (current->next != NULL && current->next->comp20003_code < newRecord->comp20003_code) {
+        current = current->next;
+    }
+
+    // Insert the new record into the list
+    newRecord->next = current->next;
+    current->next = newRecord;
+}
+
+void printSuburbRecordsByCompCode(SuburbRecord *head) {
+    SuburbRecord *current = head;
+    while (current != NULL) {
+        printf("COMP20003 Code: %d, Official Name Suburb: %s\n",
+               current->comp20003_code,
+               current->official_name_suburb);
+        current = current->next;
+    }
+}
+
+
 PatriciaNode *insertPatriciaNode(PatriciaNode *root, char *key, SuburbRecord *record, int *bitKeyIndex) {
     if (!root) {
         // Create a new node with the entire key as the prefix
@@ -121,6 +151,7 @@ PatriciaNode *insertPatriciaNode(PatriciaNode *root, char *key, SuburbRecord *re
         bitIndex++;
         *bitKeyIndex += 1;
     }
+    // printf("*bitKeyIndex: %d, key: %s, current->prefixBits: %d, current->prefix: %s, bitIndex: %d\n", *bitKeyIndex, key, current->prefixBits, current->prefix, bitIndex);
     // Mismatch found or end of the prefix
     if (bitIndex < current->prefixBits) {
         // Adjust the current node to represent the common prefix only
@@ -152,9 +183,9 @@ PatriciaNode *insertPatriciaNode(PatriciaNode *root, char *key, SuburbRecord *re
         assert(newLeaf);
         if (*bitKeyIndex > strlen(key) * BITS_PER_BYTE)
         {
-            newLeaf->prefix = '\0';
+            unsigned char binaryValue = 0b00000001;
+            newLeaf->prefix = &binaryValue;
             newLeaf->prefixBits = *bitKeyIndex- strlen(key) * BITS_PER_BYTE;
-
         } else {
             newLeaf->prefix = createStem(key, *bitKeyIndex, strlen(key) * BITS_PER_BYTE - *bitKeyIndex);
             newLeaf->prefixBits = strlen(key) * BITS_PER_BYTE - *bitKeyIndex + 8;
@@ -179,8 +210,15 @@ PatriciaNode *insertPatriciaNode(PatriciaNode *root, char *key, SuburbRecord *re
             current->branchA = insertPatriciaNode(current->branchA, key, record, bitKeyIndex);            
         }
     } else {
-        // The key fully matches the current node's prefix, so just update the record
-        current->record = record;
+        // The key fully matches the current node's prefix, so insert the record into the sorted list
+        // SuburbRecord **recordPtr = &(current->record);
+        // while (*recordPtr && (*recordPtr)->comp20003_code < record->comp20003_code) {
+        //     recordPtr = &((*recordPtr)->next);
+        // }
+        // record->next = *recordPtr;
+        // *recordPtr = record;
+        insertSuburbRecordSorted(&(current->record), record);
+        printSuburbRecordsByCompCode(current->record);
     }
 
     return root;
@@ -235,13 +273,11 @@ QueryResult searchPatriciaTree(PatriciaNode *root, const char *suburbQuery) {
     SuburbRecord *closestRecord = NULL;
     int minEditDistance = INT_MAX;
     char *queryBinary = createStem(suburbQuery, 0, strlen(suburbQuery) * BITS_PER_BYTE);
-    // printStringAsBinary(queryBinary);
     int mismatched = 0;
     while (current) {
         result.nodeAccesses++;
 
         // Compare the current node's prefix with the corresponding part of the suburb query
-        // printStringAsBinary(current->prefix);
         for (int i = 0; i < current->prefixBits; i++) {
             int bitInKey = getBit(suburbQuery, bitIndex);
             int bitInPrefix = getBit(current->prefix, i);
@@ -268,15 +304,23 @@ QueryResult searchPatriciaTree(PatriciaNode *root, const char *suburbQuery) {
     if (mismatched) {
         find_closet_record(current, closestRecord, &result, suburbQuery, &minEditDistance);
         result.matches = closestRecord;
+        result.matchesFound = 1;
     }
     else {
         // Exact match found
-        result.matches = malloc(sizeof(SuburbRecord *));
-        result.matches[0] = current->record;
+        result.matches = current->record;
+        int matchCount = 0;
+        SuburbRecord *tempPtr = current->record;
+        
+        // Loop through the linked list of matching records
+        while (tempPtr) {
+            printf("tempPtr: %d", matchCount);
+            matchCount++;
+            tempPtr = tempPtr->next;
+        }
+        result.matchesFound = matchCount;
     }
 
-    // If the search reaches here, no exact match was found
-    result.matchesFound = 1;
     return result;
 }
 
@@ -299,38 +343,34 @@ int editDistance(char *str1, char *str2, int n, int m) {
     return dp[n][m];
 }
 
-// SuburbRecord *findClosestMatch(PatriciaNode *node,   int *minEditDistance) {
-//     if (!node) return NULL;
-
-//     // if leaf node found, we calculate the edit distance between the binary suburbName and query.
-//     if (!node->branchA && node->branchB) {
-//         int currentDistance = editDistance(createStem(node->record->suburbName, 0, strlen(node->record->suburbName) * BITS_PER_BYTE), createStem(query, 0, strlen(query) * BITS_PER_BYTE), strlen(node->record->suburbName) * BITS_PER_BYTE, strlen(query) * BITS_PER_BYTE);
-//         if (currentDistance < *minEditDistance) {
-//             *minEditDistance = currentDistance;
-//         }
-//     }
-    
-
-//     SuburbRecord *leftMatch = findClosestMatch(node->branchA, query, minEditDistance);
-//     SuburbRecord *rightMatch = findClosestMatch(node->branchB, query, minEditDistance);
-
-//     return (leftMatch && currentDistance == *minEditDistance) ? leftMatch : rightMatch;
-// }
-
-// void outputSearchResults(FILE *outputFp, QueryResult result) {
-//     fprintf(outputFp, "COMP20003 Code,Official Code Suburb,Official Name Suburb,Year,Official Code State,Official Name State,Official Code Local Government Area,Official Name Local Government Area,Latitude,Longitude\n");
-
-//     if (result.record) {
-//         fprintf(outputFp, "%d,%d,%s,%d,%d,%s,%s,%s,%f,%f\n",
-//                 current->comp20003_code, current->official_code_suburb, current->official_name_suburb,
-//                 current->year, current->official_code_state, current->official_name_state,
-//                 current->official_code_lga, current->official_name_lga, current->latitude, current->longitude);
-//         current = current->next;
-//         fprintf(outputFp, "%s --> COMP20003 Code: %d, Official Code Suburb: %d, Official Name Suburb: %s, Year: %d, Official Code State: %s\n",
-//                 result.record->officialNameSuburb, result.record->comp20003Code, result.record->officialCodeSuburb,
-//                 result.record->officialNameSuburb, result.record->year, result.record->officialCodeState);
-//     }
-// }
+void outputSearchResults(FILE *outputFp, QueryResult result) {
+    // Check if there are matching records
+    if (result.matchesFound > 0) {
+        printf("found: %d\n", result.matchesFound );
+        SuburbRecord *current = result.matches;
+        
+        // Loop through the linked list of matching records
+        while (current) {
+            printf(" current->official_name_suburb: %s\n",  current->official_name_suburb);
+            printf("COMP20003 Code: %d, Official Code Suburb: %d, Official Name Suburb: %s, Year: %d, Official Code State: %d, Official Name State: %s, Official Code Local Government Area: %s, Official Name Local Government Area: %s, Latitude: %lf, Longitude: %lf\n",
+                current->comp20003_code, current->official_code_suburb, current->official_name_suburb,
+                current->year, current->official_code_state, current->official_name_state,
+                current->official_code_lga, current->official_name_lga, current->latitude, current->longitude);
+            // Output the suburb name
+            // fprintf(outputFp, "%s -->\n", current->official_name_suburb);
+            // printf(" current->official_name_suburb");
+            // fprintf(outputFp, "COMP20003 Code: %d, Official Code Suburb: %d, Official Name Suburb: %s, Year: %d, Official Code State: %d, Official Name State: %s, Official Code Local Government Area: %s, Official Name Local Government Area: %s, Latitude: %lf, Longitude: %lf\n",
+            //     current->comp20003_code, current->official_code_suburb, current->official_name_suburb,
+            //     current->year, current->official_code_state, current->official_name_state,
+            //     current->official_code_lga, current->official_name_lga, current->latitude, current->longitude);
+            // Move to the next record in the list
+            current = current->next;
+        }
+    } else {
+        // Output if no matches were found
+        fprintf(outputFp, "No matches found for query: %s\n", result.suburbQuery);
+    }
+}
 
 void freePatriciaTree(PatriciaNode *root) {
     if (root) {

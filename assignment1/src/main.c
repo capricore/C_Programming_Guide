@@ -63,6 +63,10 @@ int main(int argc, char *argv[]) {
     } else if (stage == 4) {
         PatriciaNode *root = NULL;
         FILE *output = fopen(output_file, "w");
+        if (!output) {
+            perror("Failed to open output file");
+            exit(EXIT_FAILURE);
+        }
         loadData(input_csv, &root);
         // Accept suburb names from stdin and search the Patricia tree
         char query[MAX_FIELD_LENGTH];
@@ -71,7 +75,6 @@ int main(int argc, char *argv[]) {
             QueryResult result = searchPatriciaTree(root, query);
             if (result.matchesFound > 0) {
                 // outputSearchResults(output_file, result);
-                // printf("%s -> ", result.matches[0]->official_name_suburb);
                 printf("%s --> %d records - comparisons: b%d n%d s%d\n", query, result.matchesFound,
                     result.bitComparisons, result.nodeAccesses, result.stringComparisons);
             } else {
