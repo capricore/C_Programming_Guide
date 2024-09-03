@@ -1,10 +1,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "../include/struct.h"
+#include "../include/patricia.h"
 #include "../include/dict.h"
 #include "../include/csv.h"
 #include "../include/search.h"
-#include "../include/patricia.h"
 
 int main(int argc, char *argv[]) {
     // printf(argv[1]);
@@ -60,6 +61,36 @@ int main(int argc, char *argv[]) {
         write_remaining_records(dict, output);
         fclose(output);
         free_dictionary(dict);
+    } else if (stage == 3) {
+        Dictionary *dict = create_dictionary();
+        dict->head = load_data(input_csv);
+        FILE *output = fopen(output_file, "w");
+        if (!output) {
+            perror("Failed to open output file");
+            exit(EXIT_FAILURE);
+        }
+        char query[MAX_FIELD_LENGTH];
+        while (fgets(query, sizeof(query), stdin)) {
+            query[strcspn(query, "\n")] = '\0'; // Remove newline character
+            QueryResult *result = searchSuburb(dict->head, query);
+             outputSearchResults(output, result);
+             if (result->matchesFound > 0) {                
+                SuburbRecord *current = result->matches;
+                int matcheCount = 0;
+                // Loop through the linked list of matching records
+                while (current != NULL) {
+                    matcheCount++;
+                    current = current->next;
+                }
+                printf("%s --> %d records - comparisons: b%d n%d s%d\n", query, matcheCount,
+                    result->bitComparisons, result->nodeAccesses, result->stringComparisons);
+            } else {
+                printf("%s --> NOTFOUND\n", query);
+            }
+        }
+        // write_remaining_records(dict, output);
+        fclose(output);
+        free_dictionary(dict);
     } else if (stage == 4) {
         PatriciaNode *root = NULL;
         FILE *output = fopen(output_file, "w");
@@ -67,7 +98,7 @@ int main(int argc, char *argv[]) {
             perror("Failed to open output file");
             exit(EXIT_FAILURE);
         }
-        loadData(input_csv, &root);
+        creatPatriciaTreeFromCsv(input_csv, &root);
         // Accept suburb names from stdin and search the Patricia tree
         char query[MAX_FIELD_LENGTH];
         while (fgets(query, sizeof(query), stdin)) {

@@ -3,6 +3,7 @@
 #include <string.h>
 #include <assert.h>
 #include "../include/patricia.h"
+#include "../include/struct.h"
 
 int min(int x, int y) {
     return (x < y) ? x : y;
@@ -90,18 +91,6 @@ char *convertStringAsBinary(char *str) {
     return binaryString;
 }
 
-int getBit(char *s, unsigned int bitIndex) {
-    assert(s && bitIndex >= 0);
-    unsigned int byte = bitIndex / BITS_PER_BYTE;
-    unsigned int indexFromLeft = bitIndex % BITS_PER_BYTE;
-    unsigned int offset = (BITS_PER_BYTE - indexFromLeft - 1) % BITS_PER_BYTE;
-    unsigned char byteOfInterest = s[byte];
-    unsigned int offsetMask = 1 << offset;
-    unsigned int maskedByte = byteOfInterest & offsetMask;
-    unsigned int bitOnly = maskedByte >> offset;
-    return bitOnly;
-}
-
 char *createStem(char *oldKey, unsigned int startBit, unsigned int numBits) {
     assert(numBits > 0 && startBit >= 0 && oldKey);
 
@@ -131,23 +120,45 @@ char *createStem(char *oldKey, unsigned int startBit, unsigned int numBits) {
     return newStem;
 }
 
-void insertSuburbRecordSorted(SuburbRecord **head, SuburbRecord *newRecord) {
-    // If the list is empty or the new record should be at the head
-    if (*head == NULL || (*head)->comp20003_code >= newRecord->comp20003_code) {
-        newRecord->next = *head;
-        *head = newRecord;
-        return;
+// Function to load data from the CSV file and insert into the Patricia tree
+void creatPatriciaTreeFromCsv(const char *filename, PatriciaNode **root) {
+    FILE *file = fopen(filename, "r");
+    if (!file) {
+        perror("Failed to open file");
+        exit(EXIT_FAILURE);
     }
 
-    // Traverse the list to find the correct insertion point
-    SuburbRecord *current = *head;
-    while (current->next != NULL && current->next->comp20003_code < newRecord->comp20003_code) {
-        current = current->next;
+    char buffer[MAX_RECORD_LENGTH];
+    fgets(buffer, sizeof(buffer), file); // Skip the header line
+
+    while (fgets(buffer, sizeof(buffer), file)) {
+        SuburbRecord *new_record = malloc(sizeof(SuburbRecord));
+        if (!new_record) {
+            perror("Failed to allocate memory");
+            exit(EXIT_FAILURE);
+        }
+
+        char *line = buffer;
+        new_record->comp20003_code = atoi(parse_field(&line)); // int atoi(const char *str); used to convert a string to an integer
+        new_record->official_code_suburb = atoi(parse_field(&line));
+        strncpy(new_record->official_name_suburb, parse_field(&line), MAX_FIELD_LENGTH - 1);
+        new_record->year = atoi(parse_field(&line));
+        new_record->official_code_state = atoi(parse_field(&line));
+        strncpy(new_record->official_name_state, parse_field(&line), MAX_FIELD_LENGTH - 1);
+        strncpy(new_record->official_code_lga, parse_field(&line), MAX_FIELD_LENGTH - 1);
+        strncpy(new_record->official_name_lga, parse_field(&line), MAX_FIELD_LENGTH - 1);
+        strncpy(new_record->isoCode, parse_field(&line), MAX_FIELD_LENGTH - 1);
+        strncpy(new_record->type, parse_field(&line), MAX_FIELD_LENGTH - 1);
+        new_record->latitude = atof(parse_field(&line));
+        new_record->longitude = atof(parse_field(&line));
+        new_record->next = NULL;
+
+        // Insert the record into the Patricia tree
+        int bitIndex = 0;
+        *root = insertPatriciaNode(*root, new_record->official_name_suburb, new_record, &bitIndex);
     }
 
-    // Insert the new record into the list
-    newRecord->next = current->next;
-    current->next = newRecord;
+    fclose(file);
 }
 
 PatriciaNode *insertPatriciaNode(PatriciaNode *root, char *key, SuburbRecord *record, int *bitKeyIndex) {
@@ -330,29 +341,6 @@ QueryResult *searchPatriciaTree(PatriciaNode *root, const char *suburbQuery) {
     }
 
     return result;
-}
-
-
-
-void outputSearchResults(FILE *outputFp, QueryResult *result) {
-    // Check if there are matching records
-    if (result->matchesFound > 0) {
-        SuburbRecord *current = result->matches;
-        
-        // Loop through the linked list of matching records
-        fprintf(outputFp, "%s -->\n", result->suburbQuery);
-        while (current) {
-            fprintf(outputFp, "COMP20003 Code: %d, Official Code Suburb: %d, Official Name Suburb: %s, Year: %d, Official Code State: %d, Official Name State: %s, Official Code Local Government Area: %s, Official Name Local Government Area: %s, Latitude: %.7lf, Longitude: %.7lf\n",
-                current->comp20003_code, current->official_code_suburb, current->official_name_suburb,
-                current->year, current->official_code_state, current->official_name_state,
-                current->official_code_lga, current->official_name_lga, current->latitude, current->longitude);
-            // Move to the next record in the list
-            current = current->next;
-        }
-    } else {
-        // Output if no matches were found
-        fprintf(outputFp, "No matches found for query: %s\n", result->suburbQuery);
-    }
 }
 
 void freePatriciaTree(PatriciaNode *root) {
