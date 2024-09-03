@@ -27,6 +27,31 @@ int editDistance(char *str1, char *str2, int n, int m) {
     return dp[n][m];
 }
 
+char *setFirstNBitsToZero(char *value, int n) {
+    assert(value != NULL && n >= 0);
+
+    // Calculate the number of full bytes and remaining bits to set to zero
+    int fullBytes = n / BITS_PER_BYTE;
+    int remainingBits = n % BITS_PER_BYTE;
+
+    // Create a copy of the input string to avoid modifying the original
+    char *result = strdup(value);
+    assert(result);
+
+    // Set the first `fullBytes` bytes to 0
+    for (int i = 0; i < fullBytes; i++) {
+        result[i] = 0x00;
+    }
+
+    // Handle the remaining bits in the next byte, if any
+    if (remainingBits > 0) {
+        unsigned char mask = (1 << (BITS_PER_BYTE - remainingBits)) - 1;
+        result[fullBytes] &= mask;
+    }
+
+    return result;
+}
+
 // Function to convert a single character to a binary string
 char *charToBinary(char c) {
     char *binary = malloc(9);  // 8 bits + null terminator
@@ -140,12 +165,12 @@ PatriciaNode *insertPatriciaNode(PatriciaNode *root, char *key, SuburbRecord *re
     // Traverse the tree
     PatriciaNode *current = root;
     unsigned int bitIndex = 0;
-    while (current->prefixBits > 0 && bitIndex < current->prefixBits && getBit(key, *bitKeyIndex) == getBit(current->prefix, bitIndex)) {
+    while (bitIndex < current->prefixBits && getBit(key, *bitKeyIndex) == getBit(current->prefix, bitIndex)) {
         bitIndex++;
         *bitKeyIndex += 1;
     }
-    // Mismatch found or end of the prefix
-    if (bitIndex < current->prefixBits && current->prefixBits > 0) {
+    // Mismatch found inside current node prefix
+    if (bitIndex < current->prefixBits) {
         // Adjust the current node to represent the common prefix only
         PatriciaNode *splitNode = malloc(sizeof(PatriciaNode));
         assert(splitNode);
@@ -159,14 +184,8 @@ PatriciaNode *insertPatriciaNode(PatriciaNode *root, char *key, SuburbRecord *re
         unsigned int remainingBits = current->prefixBits - bitIndex;
         char *remainingPrefix = createStem(current->prefix, bitIndex, remainingBits);
 
-        if (*bitKeyIndex > strlen(current->record->official_name_suburb) * BITS_PER_BYTE) {
-            // if the inserting node is longer then current node, we need to mark current node as the end dummy node.
-            current->prefix = '\0';
-            current->prefixBits = 0;
-        } else {
-            current->prefix = remainingPrefix;
-            current->prefixBits = remainingBits;
-        }
+        current->prefix = remainingPrefix;
+        current->prefixBits = remainingBits;
         // Determine which branch the current node and the new node should go into
         if (getBit(key, *bitKeyIndex)) {
             splitNode->branchA = current;  // Current node goes into branchA
@@ -181,15 +200,15 @@ PatriciaNode *insertPatriciaNode(PatriciaNode *root, char *key, SuburbRecord *re
         assert(newLeaf);
         if (*bitKeyIndex > strlen(key) * BITS_PER_BYTE) {
             // insert dummy node
-            newLeaf->prefix = '\0';
-            newLeaf->prefixBits = 0;
+            char value[] = {0xFF};
+            newLeaf->prefix = setFirstNBitsToZero(value, strlen(key) * BITS_PER_BYTE - *bitKeyIndex + 8);
+            newLeaf->prefixBits = strlen(key) * BITS_PER_BYTE - *bitKeyIndex + 8;
         } else {
             newLeaf->prefix = createStem(key, *bitKeyIndex, strlen(key) * BITS_PER_BYTE - *bitKeyIndex);
             newLeaf->prefixBits = strlen(key) * BITS_PER_BYTE - *bitKeyIndex + 8;
         }
         newLeaf->branchA = newLeaf->branchB = NULL;
         newLeaf->record = record;
-
         // Attach the new leaf node to the split node
         if (getBit(key, *bitKeyIndex)) {
             splitNode->branchB = newLeaf;
@@ -200,7 +219,7 @@ PatriciaNode *insertPatriciaNode(PatriciaNode *root, char *key, SuburbRecord *re
     }
 
     // If the entire prefix matches, go deeper into the tree
-    if (*bitKeyIndex < strlen(key) * BITS_PER_BYTE + 8 && current->prefixBits > 0) {
+    if (*bitKeyIndex < strlen(key) * BITS_PER_BYTE + 8) {
         if (getBit(key, *bitKeyIndex)) {
             current->branchB = insertPatriciaNode(current->branchB, key, record, bitKeyIndex);
         } else {
@@ -219,7 +238,7 @@ void find_closet_record(PatriciaNode *current, SuburbRecord** closestRecord, con
     }
     if (!current->branchA && !current->branchB) {
         char *queryBinaries = convertStringAsBinary(suburbQuery);
-        char *subNameBinaries = convertStringAsBinary(current->record->official_name_suburb);
+        char *subNameBinaries = convertStringAsBinary(current->record->official_name_suburb); 
         int currentDistance = editDistance(queryBinaries, subNameBinaries, strlen(queryBinaries), strlen(subNameBinaries));
         if (*closestRecord == NULL) {
             *closestRecord = current->record;
@@ -257,11 +276,10 @@ QueryResult *searchPatriciaTree(PatriciaNode *root, const char *suburbQuery) {
     int bitIndex = 0;
     int stringLen = strlen(suburbQuery);
     SuburbRecord *closestRecord = NULL;
-    int minEditDistance = 1000;
+    int minEditDistance = INT_MAX;
     int mismatched = 0;
     while (current) {
         result->nodeAccesses++;
-
         // Compare the current node's prefix with the corresponding part of the suburb query
         for (int i = 0; i < current->prefixBits; i++) {
             int bitInKey = getBit(suburbQuery, bitIndex);
@@ -275,21 +293,23 @@ QueryResult *searchPatriciaTree(PatriciaNode *root, const char *suburbQuery) {
         }
         if (mismatched) {
             break;
-        }        
+        }
         // Move to the next node in the Patricia tree
         if (bitIndex < stringLen * BITS_PER_BYTE) {
             int nextBit = getBit(suburbQuery, bitIndex);
             current = nextBit ? current->branchB : current->branchA;
         } else  if (bitIndex > stringLen * BITS_PER_BYTE) {
-            if (bitIndex == stringLen * BITS_PER_BYTE + 8)
-            {
+            if (bitIndex == stringLen * BITS_PER_BYTE + 8) {
                 result->stringComparisons++;
                 break;  // End of the query string reached
             }            
-            if (bitIndex < stringLen * BITS_PER_BYTE + 8 && current->branchA->prefixBits == 0)
-            {
+            if (bitIndex < stringLen * BITS_PER_BYTE + 8) {
+                if (strcmp(current->record->official_name_suburb, suburbQuery) != 0) {
+                    mismatched = 1;
+                    break;
+                }                
                 current = current->branchA;
-                result->stringComparisons++;
+                result->stringComparisons++;          
                 break;  // End of the query string reached
             } else {
                 mismatched = 1;
@@ -306,13 +326,7 @@ QueryResult *searchPatriciaTree(PatriciaNode *root, const char *suburbQuery) {
     else {
         // Exact match found
         result->matches = current->record;
-        SuburbRecord *tempPtr = current->record;
-        
-        // Loop through the linked list of matching records
-        while (tempPtr) {
-            result->matchesFound++;
-            tempPtr = tempPtr->next;
-        }
+        result->matchesFound = 1;
     }
 
     return result;
@@ -327,7 +341,7 @@ void outputSearchResults(FILE *outputFp, QueryResult *result) {
         
         // Loop through the linked list of matching records
         fprintf(outputFp, "%s -->\n", result->suburbQuery);
-        while (current) {            
+        while (current) {
             fprintf(outputFp, "COMP20003 Code: %d, Official Code Suburb: %d, Official Name Suburb: %s, Year: %d, Official Code State: %d, Official Name State: %s, Official Code Local Government Area: %s, Official Name Local Government Area: %s, Latitude: %.7lf, Longitude: %.7lf\n",
                 current->comp20003_code, current->official_code_suburb, current->official_name_suburb,
                 current->year, current->official_code_state, current->official_name_state,
@@ -347,16 +361,24 @@ void freePatriciaTree(PatriciaNode *root) {
     }
 
     // Recursively free the left and right branches
-    freePatriciaTree(root->branchA);
-    freePatriciaTree(root->branchB);
+    if (root->branchA) {
+        freePatriciaTree(root->branchA);
+    }
+    if (root->branchB) {
+        freePatriciaTree(root->branchB);
+    }
 
     // Free the prefix string
-    free(root->prefix);
+    if (root->prefix) {
+        free(root->prefix);
+    }
 
     // Free the associated records linked list
     SuburbRecord *current = root->record;
     while (current != NULL) {
         SuburbRecord *nextRecord = current->next;
+        
+        // Avoid double-free by setting pointers to NULL after freeing
         free(current);
         current = nextRecord;
     }
