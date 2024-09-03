@@ -75,7 +75,14 @@ int main(int argc, char *argv[]) {
             QueryResult *result = searchPatriciaTree(root, query);
             if (result->matchesFound > 0) {
                 outputSearchResults(output, result);
-                printf("%s --> %d records - comparisons: b%d n%d s%d\n", query, result->matchesFound,
+                SuburbRecord *current = result->matches;
+                int matcheCount = 0;
+                // Loop through the linked list of matching records
+                while (current != NULL) {
+                    matcheCount++;
+                    current = current->next;
+                }
+                printf("%s --> %d records - comparisons: b%d n%d s%d\n", query, matcheCount,
                     result->bitComparisons, result->nodeAccesses, result->stringComparisons);
             } else {
                 printf("%s --> NOTFOUND\n", query);

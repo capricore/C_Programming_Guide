@@ -12,6 +12,8 @@ typedef struct PatriciaNode {
     struct PatriciaNode *branchA;     // Child node A
     struct PatriciaNode *branchB;     // Child node B
     SuburbRecord *record;             // Associated records
+    int isLeafNode;
+    int isDummyNode;
 } PatriciaNode;
 
 typedef struct {

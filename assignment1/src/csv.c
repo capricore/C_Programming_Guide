@@ -80,6 +80,18 @@ SuburbRecord *load_data(const char *filename) {
     return head;
 }
 
+
+void printStringAsBinary(const char *str) {
+    while (*str != '\0') {
+        unsigned char ch = *str;
+        for (int i = 7; i >= 0; i--) {
+            printf("%d", (ch >> i) & 1);
+        }
+        str++;
+    }
+    printf("\n");
+}
+
 void write_remaining_records(Dictionary *dict, FILE *output) {
     fprintf(output, "COMP20003 Code,Official Code Suburb,Official Name Suburb,Year,Official Code State,Official Name State,Official Code Local Government Area,Official Name Local Government Area,Latitude,Longitude\n");
 
@@ -120,14 +132,17 @@ void loadData(const char *filename, PatriciaNode **root) {
         strncpy(new_record->official_name_state, parse_field(&line), MAX_FIELD_LENGTH - 1);
         strncpy(new_record->official_code_lga, parse_field(&line), MAX_FIELD_LENGTH - 1);
         strncpy(new_record->official_name_lga, parse_field(&line), MAX_FIELD_LENGTH - 1);
-        strncpy(new_record->isoCode, parse_field(&line), MAX_FIELD_LENGTH - 1);
-        strncpy(new_record->type, parse_field(&line), MAX_FIELD_LENGTH - 1);
+        // strncpy(new_record->isoCode, parse_field(&line), MAX_FIELD_LENGTH - 1);
+        // strncpy(new_record->type, parse_field(&line), MAX_FIELD_LENGTH - 1);
         new_record->latitude = atof(parse_field(&line));
         new_record->longitude = atof(parse_field(&line));
         new_record->next = NULL;
 
         // Insert the record into the Patricia tree
         int bitIndex = 0;
+        printf("new record: %s\n", new_record->official_name_suburb);
+         printf("new record: %.7lf\n", new_record->latitude);
+        printStringAsBinary(new_record->official_name_suburb);
         *root = insertPatriciaNode(*root, new_record->official_name_suburb, new_record, &bitIndex);
     }
 
