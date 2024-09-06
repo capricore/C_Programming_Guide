@@ -37,11 +37,11 @@ void insertSuburbRecordSorted(SuburbRecord **head, SuburbRecord *newRecord) {
 
 void outputSearchResults(FILE *outputFp, QueryResult *result) {
     // Check if there are matching records
+    fprintf(outputFp, "%s -->\n", result->suburbQuery);
     if (result->matchesFound > 0) {
         SuburbRecord *current = result->matches;
         
         // Loop through the linked list of matching records
-        fprintf(outputFp, "%s -->\n", result->suburbQuery);
         while (current) {
             fprintf(outputFp, "COMP20003 Code: %d, Official Code Suburb: %d, Official Name Suburb: %s, Year: %d, Official Code State: %d, Official Name State: %s, Official Code Local Government Area: %s, Official Name Local Government Area: %s, Latitude: %.7lf, Longitude: %.7lf\n",
                 current->comp20003_code, current->official_code_suburb, current->official_name_suburb,
