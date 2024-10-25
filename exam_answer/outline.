@@ -5,7 +5,7 @@
 5. Heap, max Heap, min heap, how to heapify.
 6. Complexity comparison of classical implementation of Dijkstra's algorithm. Heap, linked list, BST. https://www.freecodecamp.org/chinese/news/dijkstras-shortest-path-algorithm-visual-introduction/
 7. how to construct a  2,3,4-tree.
-8. array and time complexity
+8. Counting Sort and time complexity
 9. Master Theorem, depth of the recursion tree
 10. Prim's algorithm and its pseudo-code implementation
 11. connected weighted directed graph and at least understand one implementation(Modified Dijkstra's Algorithm)
