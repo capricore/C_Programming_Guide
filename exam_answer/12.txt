@@ -1,0 +1,80 @@
+To model the problem of scheduling tasks with dependencies in a car workshop as a graph, we can represent the tasks as nodes and the dependencies as directed edges. Here’s how to approach this problem and find a solution efficiently:
+
+### **Graph Modeling**
+
+1. **Vertices (Nodes)**: Each task that needs to be completed is represented as a vertex in the graph.
+
+2. **Directed Edges**: If a task \(A\) must be completed before a task \(B\), we draw a directed edge from \(A\) to \(B\) (i.e., \(A \rightarrow B\)). This indicates that \(A\) is a prerequisite for \(B\).
+
+3. **Directed Acyclic Graph (DAG)**: Since the tasks and their dependencies form a hierarchy, we ensure that the graph is a **Directed Acyclic Graph (DAG)**. This means there are no cycles in the graph, which is a crucial property for scheduling tasks.
+
+### **Finding the Schedule**
+
+To find a valid ordering of the tasks such that all dependencies are respected, we can use **Topological Sorting**. This algorithm will help us determine an order to perform the tasks that respects their dependencies.
+
+### **Algorithm: Kahn’s Algorithm for Topological Sorting**
+
+Kahn's algorithm is a popular method for topological sorting of a DAG and operates in \(O(V + E)\) time complexity, where \(V\) is the number of vertices (tasks) and \(E\) is the number of edges (dependencies). Here’s how Kahn’s algorithm works:
+
+1. **Calculate In-Degree**: 
+   - Initialize an in-degree count for each vertex. The in-degree of a vertex is the number of edges directed towards it.
+   
+2. **Initialize the Queue**: 
+   - Create a queue (or a list) of all vertices with in-degree 0. These are the tasks that can be started immediately since they have no prerequisites.
+
+3. **Process the Queue**:
+   - While the queue is not empty:
+     - Remove a vertex from the front of the queue (this represents a task to execute).
+     - Add this vertex to the topological order.
+     - For each outgoing edge from this vertex to its neighbors:
+       - Decrease the in-degree of the neighboring vertices by 1.
+       - If the in-degree of a neighbor becomes 0, add it to the queue.
+
+4. **Check for Completion**:
+   - If all vertices are processed (i.e., added to the topological order), then the ordering is valid. If there are still vertices with non-zero in-degrees, it indicates a cycle, which means the tasks cannot be scheduled due to circular dependencies.
+
+### **Pseudocode for Kahn's Algorithm**
+
+```python
+from collections import deque, defaultdict
+
+def topological_sort(tasks, dependencies):
+    # Step 1: Create the graph
+    in_degree = {task: 0 for task in tasks}  # Initialize in-degrees
+    graph = defaultdict(list)  # Adjacency list representation
+
+    # Step 2: Build the graph and in-degree count
+    for prerequisite, task in dependencies:
+        graph[prerequisite].append(task)  # Add edge from prerequisite to task
+        in_degree[task] += 1  # Increment in-degree of task
+
+    # Step 3: Initialize the queue with nodes of in-degree 0
+    queue = deque([task for task in tasks if in_degree[task] == 0])
+    top_order = []
+
+    # Step 4: Process the queue
+    while queue:
+        current_task = queue.popleft()
+        top_order.append(current_task)
+
+        # Decrease the in-degree of neighboring tasks
+        for neighbor in graph[current_task]:
+            in_degree[neighbor] -= 1
+            if in_degree[neighbor] == 0:
+                queue.append(neighbor)
+
+    # Check for cycles
+    if len(top_order) == len(tasks):
+        return top_order  # Return valid topological order
+    else:
+        return None  # Cycle detected; scheduling is not possible
+```
+
+### **Complexity Analysis**
+
+- **Time Complexity**: The algorithm runs in \(O(V + E)\) time, which is efficient for sparse graphs.
+- **Space Complexity**: It requires \(O(V + E)\) space to store the graph and in-degree counts.
+
+### **Conclusion**
+
+By modeling the task scheduling problem as a directed acyclic graph and applying Kahn's algorithm for topological sorting, we can determine a valid order in which to complete the tasks while respecting their dependencies. This approach ensures that we efficiently find a solution with a worst-case complexity of \(O(E)\).
